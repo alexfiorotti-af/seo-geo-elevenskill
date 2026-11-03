@@ -1,0 +1,19 @@
+# Segredos e configuração local
+.env
+.env.*
+*.local.*
+*.key
+
+# Camada privada da metodologia e dados de clientes (nunca publicar)
+metodologia-local/
+clientes/
+relatorios/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Sistema
+.DS_Store
+Thumbs.db

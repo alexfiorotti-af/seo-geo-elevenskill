@@ -1,0 +1,14 @@
+User-agent: *
+Disallow: /busca
+Disallow: /*?*utm_
+Allow: /busca/ajuda$
+
+User-agent: GPTBot
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: PerplexityBot
+Disallow: /privado/
+Allow: /privado/publico/
+
+Sitemap: https://clinica-aurora.test/sitemap.xml

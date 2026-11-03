@@ -1,0 +1,55 @@
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": ["BeautySalon"],
+      "@id": "https://dominio.com/#organization",
+      "name": "Nome exato da empresa (igual ao Perfil da Empresa no Google)",
+      "url": "https://dominio.com/",
+      "logo": "https://dominio.com/img/logo.png",
+      "image": "https://dominio.com/img/fachada.jpg",
+      "description": "Mesma descrição curta usada na home.",
+      "telephone": "+55-00-00000-0000",
+      "priceRange": "$$",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Rua Exemplo, 123",
+        "addressLocality": "Cidade",
+        "addressRegion": "UF",
+        "postalCode": "00000-000",
+        "addressCountry": "BR"
+      },
+      "geo": { "@type": "GeoCoordinates", "latitude": 0.0, "longitude": 0.0 },
+      "areaServed": [{ "@type": "City", "name": "Cidade" }],
+      "openingHoursSpecification": [
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+          "opens": "09:00",
+          "closes": "18:00"
+        }
+      ],
+      "sameAs": [
+        "https://www.instagram.com/perfil-oficial",
+        "https://www.google.com/maps?cid=000000000000000000"
+      ]
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://dominio.com/#website",
+      "url": "https://dominio.com/",
+      "name": "Nome do site (como deve aparecer no Google)",
+      "inLanguage": "pt-BR",
+      "publisher": { "@id": "https://dominio.com/#organization" }
+    },
+    {
+      "@type": "WebPage",
+      "@id": "https://dominio.com/#webpage",
+      "url": "https://dominio.com/",
+      "name": "Title da home",
+      "isPartOf": { "@id": "https://dominio.com/#website" },
+      "about": { "@id": "https://dominio.com/#organization" },
+      "inLanguage": "pt-BR"
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+# robots.txt modelo (seo-geo-elevenskill)
+# Troque https://dominio.com pelo domínio real. Um arquivo por host/subdomínio.
+# Bloquear aqui impede o rastreio, NÃO a indexação. Para tirar do índice, use noindex.
+
+# --- Regra geral: todos podem rastrear o site público ---
+User-agent: *
+Disallow: /busca
+Disallow: /carrinho
+Disallow: /minha-conta
+Disallow: /obrigado
+Disallow: /*?*utm_
+Allow: /
+
+# --- Robôs de BUSCA e de acesso sob demanda: mantenha liberados para aparecer em respostas de IA ---
+# Googlebot (Search, AI Overviews, AI Mode), Bingbot (Bing, Copilot),
+# OAI-SearchBot / ChatGPT-User (ChatGPT), Claude-SearchBot / Claude-User (Claude),
+# PerplexityBot / Perplexity-User (Perplexity), Applebot (Siri, Spotlight).
+# Eles já são cobertos pela regra geral acima; não precisam de bloco próprio.
+
+# --- Robôs de TREINO de modelos: decisão do dono do site ---
+# Para BLOQUEAR o uso do conteúdo em treino, descomente o bloco abaixo.
+# Isso não afeta Google Search, AI Overviews, AI Mode, ChatGPT Search, Claude ou Perplexity.
+#
+# User-agent: GPTBot
+# User-agent: ClaudeBot
+# User-agent: Google-Extended
+# User-agent: Applebot-Extended
+# User-agent: Meta-ExternalAgent
+# User-agent: CCBot
+# Disallow: /
+
+# --- Sitemaps (URL absoluta) ---
+Sitemap: https://dominio.com/sitemap.xml

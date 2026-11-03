@@ -1,0 +1,135 @@
+---
+name: seo-geo-elevenskill
+description: Planeja, implementa e audita SEO e GEO (otimização para buscadores e para motores de resposta com IA como AI Overviews, AI Mode, ChatGPT, Perplexity, Claude e Copilot) em sites, sempre do back-end para o front-end. Usar ao criar ou revisar um site, página, robots.txt, sitemap, dados estruturados, títulos, meta descriptions, metatags, mapa de palavras-chave, arquitetura de conteúdo, Core Web Vitals, visibilidade em IA ou ao diagnosticar queda de tráfego orgânico. Also triggers on "SEO audit", "technical SEO", "GEO", "AEO", "AI search visibility", "schema markup", "meta tags".
+license: MIT
+---
+
+# SEO + GEO em 11 pilares (back-end → front-end)
+
+Esta skill transforma um pedido de SEO/GEO em entregáveis concretos (arquivos, código, relatório
+priorizado) seguindo uma ordem fixa: **primeiro o que o robô precisa para encontrar, ler e confiar
+na página (back-end); depois o que a pessoa e o motor de resposta veem (front-end)**.
+
+A premissa central, confirmada pelo próprio Google em 2026: otimizar para busca com IA continua
+sendo SEO. AI Overviews e AI Mode usam o mesmo índice e os mesmos sinais de ranqueamento; ChatGPT,
+Perplexity, Claude e Copilot usam índices próprios ou de parceiros, mas premiam as mesmas coisas:
+página rastreável, rápida, com conteúdo original, bem estruturado, de uma entidade confiável.
+Não existe atalho "só para IA" que compense um site tecnicamente fraco.
+
+## Os 11 pilares
+
+| # | Camada | Pilar | Referência |
+|---|---|---|---|
+| 1 | Back-end | Arquitetura de URLs e de informação | `references/02-backend-rastreio-indexacao.md` |
+| 2 | Back-end | Rastreabilidade: robots.txt, sitemaps, IndexNow, crawlers de IA | `references/02-backend-rastreio-indexacao.md` |
+| 3 | Back-end | Indexação: status HTTP, redirects, canonical, noindex, hreflang | `references/02-backend-rastreio-indexacao.md` |
+| 4 | Back-end | Renderização: HTML entregue pelo servidor, JS e crawlers que não executam JS | `references/02-backend-rastreio-indexacao.md` |
+| 5 | Back-end | Performance e servidor: TTFB, cache, CDN, Core Web Vitals | `references/03-backend-performance-dados-estruturados.md` |
+| 6 | Back-end | Dados estruturados (JSON-LD) e grafo de entidade | `references/03-backend-performance-dados-estruturados.md` |
+| 7 | Front-end | Responsividade, HTML semântico, acessibilidade e site "amigável a agentes" | `references/04-frontend-responsivo-semantico.md` |
+| 8 | Front-end | Metadados: title, meta description, robots, Open Graph | `references/05-metadados-titulos-descricoes.md` |
+| 9 | Front-end | Palavras-chave, intenção e arquitetura de conteúdo (páginas que movimentam o site) | `references/06-palavras-chave-conteudo.md` |
+| 10 | Front-end | GEO: conteúdo citável, entidade, autoria, frescor, menções | `references/07-geo-motores-de-resposta.md` |
+| 11 | Transversal | Medição, governança e políticas de spam | `references/08-medicao-governanca.md` |
+
+Contexto de mercado e de como cada buscador funciona: `references/01-players-e-tecnologias.md`.
+Implementação por stack (Next.js, Astro, HTML estático, WordPress): `references/09-stacks.md`.
+Fontes com data de consulta: `references/00-fontes.md`.
+
+Leia **só a referência do pilar em que está trabalhando**. Não carregue tudo de uma vez.
+
+**Camada privada:** se existir a pasta `metodologia-local/` ao lado deste arquivo (ela é ignorada
+pelo Git e não vai para o repositório público), leia o `README.md` dela antes de começar. O que
+estiver lá (padrões da agência, nichos, modelos de cliente) tem precedência sobre as referências
+públicas, exceto sobre as "Regras que nunca quebram".
+
+## Escolha o modo de trabalho
+
+Identifique o modo pelo pedido. Se houver dúvida, assuma o mais completo que caiba no pedido e
+diga qual assumiu na primeira linha da resposta.
+
+### Modo A: site novo (construção)
+1. Levante o mínimo de contexto (ver "Briefing" abaixo).
+2. Percorra os pilares **na ordem 1 → 11**. Para cada um, produza o artefato, não só a recomendação:
+   árvore de URLs, `robots.txt`, `sitemap.xml` (ou o gerador da stack), regras de redirect/canonical,
+   configuração de renderização, orçamento de performance, grafo JSON-LD, `<head>` base,
+   mapa de palavras-chave, briefs de conteúdo, plano de medição.
+3. Use os modelos de `templates/` como ponto de partida e adapte. Nunca deixe placeholder
+   (`example.com`, `SEU-DOMINIO`) no entregável final.
+4. Rode os scripts de validação (seção "Ferramentas") sobre o que gerou.
+
+### Modo B: auditoria de site existente
+1. Rode `scripts/check_robots.py` no domínio e `scripts/audit_page.py` nas páginas-chave
+   (home, uma de serviço/produto, uma de conteúdo, uma local se houver).
+2. Valide o sitemap com `scripts/validate_sitemap.py`.
+3. Revise os pilares 1 → 11 contra a checklist de cada referência.
+4. Entregue com `templates/relatorio-auditoria.md`: achados ordenados por
+   **impacto × esforço**, cada um com evidência (URL, trecho, saída do script) e correção exata.
+   Bloqueios de indexação e rastreio vêm sempre antes de qualquer ajuste de front-end.
+
+### Modo C: página ou conteúdo novo
+1. Defina a intenção e a palavra-chave principal (pilar 9). Confira se outra URL já atende
+   essa intenção; se sim, melhore a existente em vez de criar outra (evita canibalização).
+2. Gere o brief com `templates/brief-de-conteudo.md`.
+3. Escreva title, meta description, H1 e slug pela metodologia do pilar 8.
+4. Aplique a estrutura citável do pilar 10 e o JSON-LD do tipo certo (pilar 6).
+5. Liste os links internos de entrada e de saída (pilar 9) e, ao publicar, atualize sitemap e IndexNow.
+
+### Modo D: metadados em lote
+Monte (ou receba) um CSV no formato de `templates/mapa-de-palavras-chave.csv`, preencha title e
+description pela metodologia do pilar 8 e rode `scripts/lint_meta.py` até zerar os erros.
+
+### Modo E: diagnóstico de queda de tráfego
+Siga a árvore de decisão de `references/08-medicao-governanca.md` (seção "Queda de tráfego"):
+primeiro descarte problema técnico e de medição, depois cruze com as datas de atualizações do
+Google, só então trate conteúdo.
+
+## Briefing mínimo
+
+Pergunte apenas o que não der para descobrir sozinho (no código, no site ou na conversa):
+- Domínio (ou "ainda não tem") e stack/hospedagem.
+- Negócio, público e região de atuação (local, nacional, internacional; idiomas).
+- 3 a 5 serviços/produtos principais e a ação de conversão (WhatsApp, formulário, compra).
+- Concorrentes ou referências, se houver.
+- Política para crawlers de IA: aparecer em buscas de IA? permitir treino de modelos?
+  (o padrão recomendado é aparecer em busca e decidir treino caso a caso; ver pilar 2).
+
+## Regras que nunca quebram
+
+1. **Não invente dados.** Nada de estatística, depoimento, avaliação, prêmio, preço ou autoria
+   fictícia, nem no texto nem no JSON-LD. Se faltar o dado, deixe marcado como pendência para o
+   dono do site.
+2. **Não crie páginas-porta.** Uma página por cidade, bairro ou variação de busca só se cada
+   uma tiver conteúdo genuinamente diferente e útil. Páginas em massa quase iguais violam a
+   política de conteúdo em escala do Google (scaled content abuse) e levam a rebaixamento.
+3. **Marcação = conteúdo visível.** Todo dado estruturado descreve algo que a pessoa vê na página.
+   Não marque avaliações do próprio negócio sobre si mesmo (LocalBusiness/Organization).
+4. **Datas honestas.** Só altere `dateModified`/`lastmod` quando o conteúdo mudar de verdade.
+5. **Sem truques para IA.** Nada de texto escondido para LLMs, instruções para robôs dentro da
+   página, versões diferentes para crawlers (cloaking) ou menções de marca forjadas.
+6. **Segredos fora do repositório.** Chaves (IndexNow, APIs de busca, analytics) vão em variável
+   de ambiente; nunca no código, no `llms.txt` ou no relatório.
+7. **Recomendação com evidência.** Toda recomendação de auditoria aponta a URL e a prova.
+   Toda afirmação sobre "como o Google/IA funciona" deve bater com `references/00-fontes.md`;
+   se algo parecer desatualizado, pesquise antes de afirmar.
+
+## Ferramentas (Python 3.9+, só biblioteca padrão)
+
+| Script | Para quê | Exemplo |
+|---|---|---|
+| `scripts/audit_page.py` | Audita uma página (arquivo HTML ou URL): title, description, canonical, robots, H1/hierarquia, lang, viewport, Open Graph, JSON-LD, imagens sem alt, links | `python3 scripts/audit_page.py https://dominio.com/ --format md` |
+| `scripts/check_robots.py` | Mostra o que cada robô (Google, Bing, OpenAI, Anthropic, Perplexity, Apple...) pode acessar e quais sitemaps estão declarados | `python3 scripts/check_robots.py https://dominio.com --path /blog/` |
+| `scripts/validate_sitemap.py` | Valida sitemap ou índice de sitemaps: URLs absolutas, mesmo host, `lastmod` em ISO 8601, limites de 50 mil URLs/50 MB | `python3 scripts/validate_sitemap.py https://dominio.com/sitemap.xml` |
+| `scripts/lint_meta.py` | Valida titles e descriptions em lote (CSV): tamanho em caracteres e largura estimada em pixels, duplicados, palavra-chave, marca | `python3 scripts/lint_meta.py mapa.csv` |
+| `scripts/indexnow_submit.py` | Envia URLs novas/alteradas ao IndexNow (Bing, Yandex, Naver, Seznam, Yep). Chave via `INDEXNOW_KEY` | `INDEXNOW_KEY=... python3 scripts/indexnow_submit.py --host dominio.com urls.txt` |
+
+Todos aceitam `--help`. Códigos de saída: `0` sem erros, `1` com erros, `2` falha de uso/rede.
+Quando não houver acesso à rede, rode sobre arquivos locais (os scripts aceitam caminho de arquivo).
+
+## Formato da entrega
+
+- Arquivos prontos para uso (com o domínio real), não só texto explicando o que fazer.
+- Para auditorias: o relatório no modelo de `templates/relatorio-auditoria.md`.
+- Ao final, uma lista curta do que depende do dono do site (dados reais, acessos ao
+  Search Console/Bing Webmaster Tools, aprovação de política de IA) e a próxima verificação
+  recomendada (normalmente 2 a 4 semanas após publicar, ou após a próxima atualização do Google).

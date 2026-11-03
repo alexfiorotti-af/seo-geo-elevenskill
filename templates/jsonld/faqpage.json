@@ -1,0 +1,14 @@
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Pergunta real que clientes fazem?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Resposta igual à exibida na página."
+      }
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>/servicos/</loc></url>
+  <url><loc>https://outro-site.test/pagina/</loc><lastmod>03/11/2026</lastmod></url>
+  <url><loc>https://clinica-aurora.test/a/?utm_source=x</loc><lastmod>2099-01-01</lastmod></url>
+  <url><loc>https://clinica-aurora.test/b/#secao</loc></url>
+  <url><loc>https://clinica-aurora.test/a/?utm_source=x</loc></url>
+</urlset>

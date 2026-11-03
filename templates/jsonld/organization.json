@@ -1,0 +1,27 @@
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://dominio.com/#organization",
+      "name": "Nome da empresa",
+      "legalName": "Razão social (opcional)",
+      "url": "https://dominio.com/",
+      "logo": { "@type": "ImageObject", "url": "https://dominio.com/img/logo.png", "width": 512, "height": 512 },
+      "description": "O que a empresa faz, em uma frase.",
+      "foundingDate": "2015",
+      "contactPoint": [
+        { "@type": "ContactPoint", "contactType": "customer service", "url": "https://dominio.com/contato/", "availableLanguage": ["pt-BR"] }
+      ],
+      "sameAs": ["https://www.linkedin.com/company/perfil-oficial", "https://www.instagram.com/perfil-oficial"]
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://dominio.com/#website",
+      "url": "https://dominio.com/",
+      "name": "Nome do site",
+      "inLanguage": "pt-BR",
+      "publisher": { "@id": "https://dominio.com/#organization" }
+    }
+  ]
+}

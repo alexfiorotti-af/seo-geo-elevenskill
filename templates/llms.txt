@@ -1,0 +1,24 @@
+# Nome da Empresa
+
+> Uma ou duas frases dizendo o que a empresa faz, para quem e onde atua. Mesmo texto que está na home.
+
+Informações confirmáveis no site: endereço e área de atendimento, horário, forma de contato.
+
+## Serviços
+
+- [Serviço 1](https://dominio.com/servicos/servico-1/): o que é e para quem é, em uma linha
+- [Serviço 2](https://dominio.com/servicos/servico-2/): o que é e para quem é, em uma linha
+
+## Conteúdo de referência
+
+- [Guia principal](https://dominio.com/blog/guia-principal/): pergunta que ele responde
+- [Perguntas frequentes](https://dominio.com/perguntas-frequentes/): dúvidas sobre preço, prazo e atendimento
+
+## Empresa
+
+- [Sobre](https://dominio.com/sobre/): história, equipe e credenciais
+- [Contato](https://dominio.com/contato/): canais de atendimento
+
+## Optional
+
+- [Blog](https://dominio.com/blog/): todos os artigos

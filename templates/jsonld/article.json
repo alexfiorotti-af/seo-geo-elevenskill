@@ -1,0 +1,36 @@
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BlogPosting",
+      "@id": "https://dominio.com/blog/slug/#article",
+      "headline": "Mesmo assunto do H1",
+      "description": "Mesma ideia da meta description.",
+      "image": ["https://dominio.com/img/blog/slug-1200x675.jpg"],
+      "datePublished": "2026-11-03T09:00:00-03:00",
+      "dateModified": "2026-11-03T09:00:00-03:00",
+      "inLanguage": "pt-BR",
+      "author": { "@id": "https://dominio.com/sobre/nome-do-autor/#person" },
+      "publisher": { "@id": "https://dominio.com/#organization" },
+      "mainEntityOfPage": "https://dominio.com/blog/slug/",
+      "about": [{ "@type": "Thing", "name": "Tema principal" }]
+    },
+    {
+      "@type": "Person",
+      "@id": "https://dominio.com/sobre/nome-do-autor/#person",
+      "name": "Nome real do autor",
+      "url": "https://dominio.com/sobre/nome-do-autor/",
+      "jobTitle": "Cargo ou formação verificável",
+      "worksFor": { "@id": "https://dominio.com/#organization" },
+      "sameAs": ["https://www.linkedin.com/in/perfil-real"]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Início", "item": "https://dominio.com/" },
+        { "@type": "ListItem", "position": 2, "name": "Blog", "item": "https://dominio.com/blog/" },
+        { "@type": "ListItem", "position": 3, "name": "Título curto do artigo" }
+      ]
+    }
+  ]
+}
