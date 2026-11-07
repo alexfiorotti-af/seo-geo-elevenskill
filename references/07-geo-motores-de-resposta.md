@@ -52,7 +52,8 @@ entendam, confiem e citem** o site. Ele se apoia nos pilares 1 a 9; sem eles, na
 - Página "Sobre" e páginas de autor com credenciais verificáveis.
 - Avaliações reais em plataformas de terceiros (Google, setoriais).
 - Menções e links legítimos em sites do setor, imprensa regional, associações, parceiros,
-  podcasts, YouTube (vídeos são muito citados em AI Overviews). **Menção forjada não funciona**:
+  podcasts, YouTube (vídeos são muito citados em AI Overviews). Como conquistar esses links e
+  menções, com o semáforo do que é permitido: `10-autoridade-links-mencoes.md`. **Menção forjada não funciona**:
   o Google afirma que os mesmos sistemas antispam protegem as respostas de IA.
 
 ### 5. Cobertura dos subtemas (pensar como o fan-out)

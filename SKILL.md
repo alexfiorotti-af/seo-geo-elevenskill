@@ -1,6 +1,6 @@
 ---
 name: seo-geo-elevenskill
-description: Planeja, implementa e audita SEO e GEO (otimização para buscadores e para motores de resposta com IA como AI Overviews, AI Mode, ChatGPT, Perplexity, Claude e Copilot) em sites, sempre do back-end para o front-end. Usar ao criar ou revisar um site, página, robots.txt, sitemap, dados estruturados, títulos, meta descriptions, metatags, mapa de palavras-chave, arquitetura de conteúdo, Core Web Vitals, visibilidade em IA ou ao diagnosticar queda de tráfego orgânico. Also triggers on "SEO audit", "technical SEO", "GEO", "AEO", "AI search visibility", "schema markup", "meta tags".
+description: Planeja, implementa e audita SEO e GEO (otimização para buscadores e para motores de resposta com IA como AI Overviews, AI Mode, ChatGPT, Perplexity, Claude e Copilot) em sites, sempre do back-end para o front-end. Usar ao criar ou revisar um site, página, robots.txt, sitemap, dados estruturados, títulos, meta descriptions, metatags, mapa de palavras-chave, arquitetura de conteúdo, Core Web Vitals, visibilidade em IA, backlinks, link building, menções de marca, SEO local ou ao diagnosticar queda de tráfego orgânico. Also triggers on "SEO audit", "technical SEO", "GEO", "AEO", "AI search visibility", "schema markup", "meta tags", "backlinks", "link building", "site crawl".
 license: MIT
 ---
 
@@ -13,7 +13,8 @@ na página (back-end); depois o que a pessoa e o motor de resposta veem (front-e
 A premissa central, confirmada pelo próprio Google em 2026: otimizar para busca com IA continua
 sendo SEO. AI Overviews e AI Mode usam o mesmo índice e os mesmos sinais de ranqueamento; ChatGPT,
 Perplexity, Claude e Copilot usam índices próprios ou de parceiros, mas premiam as mesmas coisas:
-página rastreável, rápida, com conteúdo original, bem estruturado, de uma entidade confiável.
+página rastreável, rápida, com conteúdo original, bem estruturado, de uma entidade confiável e
+referenciada por outras fontes (links e menções conquistados, nunca fabricados).
 Não existe atalho "só para IA" que compense um site tecnicamente fraco.
 
 ## Os 11 pilares
@@ -29,7 +30,7 @@ Não existe atalho "só para IA" que compense um site tecnicamente fraco.
 | 7 | Front-end | Responsividade, HTML semântico, acessibilidade e site "amigável a agentes" | `references/04-frontend-responsivo-semantico.md` |
 | 8 | Front-end | Metadados: title, meta description, robots, Open Graph | `references/05-metadados-titulos-descricoes.md` |
 | 9 | Front-end | Palavras-chave, intenção e arquitetura de conteúdo (páginas que movimentam o site) | `references/06-palavras-chave-conteudo.md` |
-| 10 | Front-end | GEO: conteúdo citável, entidade, autoria, frescor, menções | `references/07-geo-motores-de-resposta.md` |
+| 10 | Front-end + fora do site | GEO e autoridade: conteúdo citável, entidade e autoria (10a); links e menções conquistados (10b) | `references/07-geo-motores-de-resposta.md` e `references/10-autoridade-links-mencoes.md` |
 | 11 | Transversal | Medição, governança e políticas de spam | `references/08-medicao-governanca.md` |
 
 Contexto de mercado e de como cada buscador funciona: `references/01-players-e-tecnologias.md`.
@@ -59,11 +60,14 @@ diga qual assumiu na primeira linha da resposta.
 4. Rode os scripts de validação (seção "Ferramentas") sobre o que gerou.
 
 ### Modo B: auditoria de site existente
-1. Rode `scripts/check_robots.py` no domínio e `scripts/audit_page.py` nas páginas-chave
-   (home, uma de serviço/produto, uma de conteúdo, uma local se houver).
-2. Valide o sitemap com `scripts/validate_sitemap.py`.
-3. Revise os pilares 1 → 11 contra a checklist de cada referência.
-4. Entregue com `templates/relatorio-auditoria.md`: achados ordenados por
+1. Rode `scripts/check_robots.py` no domínio e `scripts/crawl_site.py` na home (links
+   quebrados, redirects internos, órfãs, inconsistências do sitemap, profundidade, titles repetidos).
+2. Rode `scripts/audit_page.py` nas páginas-chave (home, uma de serviço/produto, uma de conteúdo,
+   uma local se houver) e valide o sitemap com `scripts/validate_sitemap.py`.
+3. Se houver acesso ao Search Console, exporte Links e rode `scripts/verify_backlinks.py destinos`
+   (páginas com backlinks fora do ar) e `origens` (links perdidos, âncoras, atributos).
+4. Revise os pilares 1 → 11 contra a checklist de cada referência.
+5. Entregue com `templates/relatorio-auditoria.md`: achados ordenados por
    **impacto × esforço**, cada um com evidência (URL, trecho, saída do script) e correção exata.
    Bloqueios de indexação e rastreio vêm sempre antes de qualquer ajuste de front-end.
 
@@ -83,6 +87,17 @@ description pela metodologia do pilar 8 e rode `scripts/lint_meta.py` até zerar
 Siga a árvore de decisão de `references/08-medicao-governanca.md` (seção "Queda de tráfego"):
 primeiro descarte problema técnico e de medição, depois cruze com as datas de atualizações do
 Google, só então trate conteúdo.
+
+### Modo F: plano de autoridade (links e menções)
+1. Leia `references/10-autoridade-links-mencoes.md`.
+2. Diagnóstico: exportações de Links do Search Console + `scripts/verify_backlinks.py` (destinos e
+   origens); compare com concorrentes se houver ferramenta paga.
+3. Recupere primeiro o que já é seu (páginas linkadas com 404, links perdidos, menções sem link).
+4. Monte o plano de 90 dias com o roteiro do tipo de negócio (local BR, local EUA, SaaS,
+   e-commerce), só com táticas verdes ou amarelas com os cuidados indicados.
+5. Defina um ativo linkável (pilar 9) e use `templates/modelos-de-abordagem.md` e
+   `templates/prospeccao-de-links.csv` (listas com contatos reais ficam fora do repositório).
+6. Medição mensal pelo pilar 11.
 
 ## Briefing mínimo
 
@@ -109,7 +124,11 @@ Pergunte apenas o que não der para descobrir sozinho (no código, no site ou na
    página, versões diferentes para crawlers (cloaking) ou menções de marca forjadas.
 6. **Segredos fora do repositório.** Chaves (IndexNow, APIs de busca, analytics) vão em variável
    de ambiente; nunca no código, no `llms.txt` ou no relatório.
-7. **Recomendação com evidência.** Toda recomendação de auditoria aponta a URL e a prova.
+7. **Link se conquista, não se fabrica.** Nunca recomende comprar links, redes ou plataformas de
+   troca de links (inclusive por créditos ou rotação), PBNs, automação de links ou âncora
+   comercial em série. Link pago ou patrocinado publicado pelo site leva `rel="sponsored"`.
+   Se o cliente já usa algo assim, avise do risco e proponha a alternativa verde.
+8. **Recomendação com evidência.** Toda recomendação de auditoria aponta a URL e a prova.
    Toda afirmação sobre "como o Google/IA funciona" deve bater com `references/00-fontes.md`;
    se algo parecer desatualizado, pesquise antes de afirmar.
 
@@ -121,6 +140,8 @@ Pergunte apenas o que não der para descobrir sozinho (no código, no site ou na
 | `scripts/check_robots.py` | Mostra o que cada robô (Google, Bing, OpenAI, Anthropic, Perplexity, Apple...) pode acessar e quais sitemaps estão declarados | `python3 scripts/check_robots.py https://dominio.com --path /blog/` |
 | `scripts/validate_sitemap.py` | Valida sitemap ou índice de sitemaps: URLs absolutas, mesmo host, `lastmod` em ISO 8601, limites de 50 mil URLs/50 MB | `python3 scripts/validate_sitemap.py https://dominio.com/sitemap.xml` |
 | `scripts/lint_meta.py` | Valida titles e descriptions em lote (CSV): tamanho em caracteres e largura estimada em pixels, duplicados, palavra-chave, marca | `python3 scripts/lint_meta.py mapa.csv` |
+| `scripts/crawl_site.py` | Rastreia o site pelos links internos (sem JS, respeitando o robots.txt): links quebrados, links para redirects, órfãs, sitemap inconsistente, profundidade, titles repetidos | `python3 scripts/crawl_site.py https://dominio.com --max-paginas 500` |
+| `scripts/verify_backlinks.py` | `origens`: confere se os backlinks ainda existem, com qual `rel` e âncora. `destinos`: confere se as páginas que recebem links respondem 200 | `python3 scripts/verify_backlinks.py destinos paginas-mais-linkadas.csv` |
 | `scripts/indexnow_submit.py` | Envia URLs novas/alteradas ao IndexNow (Bing, Yandex, Naver, Seznam, Yep). Chave via `INDEXNOW_KEY` | `INDEXNOW_KEY=... python3 scripts/indexnow_submit.py --host dominio.com urls.txt` |
 
 Todos aceitam `--help`. Códigos de saída: `0` sem erros, `1` com erros, `2` falha de uso/rede.

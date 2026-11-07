@@ -8,6 +8,8 @@
 metodologia-local/
 clientes/
 relatorios/
+prospeccao/
+*.prospects.csv
 
 # Python
 __pycache__/

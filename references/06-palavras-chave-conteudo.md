@@ -72,6 +72,7 @@ Regras do mapa:
 | **Páginas de serviço/produto fortes** | Converter; ranquear para intenção transacional | Conteúdo próprio: processo, preço/faixa, prazos, FAQ real, prova |
 | **Artigos que respondem dúvidas reais** | Atrair quem ainda está pesquisando; alimentar IAs | Resposta direta no início; experiência própria |
 | **Comparativos e páginas de preço** | Capturar a fase de decisão; muito citadas por IAs | Critérios honestos; datar preços |
+| **Ativos linkáveis** (estatísticas, calculadora, guia de referência) | Atrair links e menções espontâneos (pilar 10b) | Dados datados e com fonte; ferramenta sem cadastro; atualização anual |
 | **Estudos de caso** | Prova e informação original (difícil de copiar) | Com autorização do cliente; números reais |
 | **Glossário** | Definições curtas linkadas aos serviços | Só termos que o público usa |
 | **Páginas locais** | Uma por cidade/bairro atendido de verdade | Conteúdo realmente local (equipe, endereço, casos, particularidades). Sem troca só do nome da cidade |

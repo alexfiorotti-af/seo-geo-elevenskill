@@ -16,7 +16,9 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
 DEFAULT_UA = "Mozilla/5.0 (compatible; seo-geo-elevenskill-audit/1.0; +https://github.com/alexfiorotti-af/seo-geo-elevenskill)"
+UA_TOKEN = "seo-geo-elevenskill-audit"
 TIMEOUT = 20
+LOCAL_HOSTS = {"localhost", "127.0.0.1", "::1"}
 
 
 @dataclass
@@ -65,7 +67,10 @@ def fetch(source: str, user_agent: str = DEFAULT_UA, method: str = "GET") -> Fet
             return Fetched(source=source, final_url=None, status=None, body=fh.read(), is_file=True)
 
     redirect = _RecordingRedirect()
-    opener = urllib.request.build_opener(redirect)
+    handlers: list = [redirect]
+    if (urllib.parse.urlsplit(source).hostname or "") in LOCAL_HOSTS:
+        handlers.append(urllib.request.ProxyHandler({}))  # servidor local: nunca passar por proxy
+    opener = urllib.request.build_opener(*handlers)
     req = urllib.request.Request(source, method=method, headers={
         "User-Agent": user_agent,
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
@@ -82,6 +87,8 @@ def fetch(source: str, user_agent: str = DEFAULT_UA, method: str = "GET") -> Fet
     except urllib.error.HTTPError as err:
         headers = {k.lower(): v for k, v in (err.headers.items() if err.headers else [])}
         body = err.read() or b""
+        if body[:2] == b"\x1f\x8b":
+            body = gzip.decompress(body)
         return Fetched(source, err.geturl() or source, err.code, headers, body, redirect.chain)
 
 
@@ -157,3 +164,49 @@ def same_site(url_a: str, url_b: str) -> bool:
 
 def env_or(value: Optional[str], env_name: str) -> Optional[str]:
     return value if value else os.environ.get(env_name)
+
+
+def host_key(url_or_host: str) -> str:
+    """Host em minúsculas, sem 'www.' e sem porta (aceita URL ou host puro)."""
+    value = url_or_host.strip()
+    host = urllib.parse.urlsplit(value if "://" in value else "//" + value).hostname or ""
+    host = host.lower()
+    return host[4:] if host.startswith("www.") else host
+
+
+def read_csv(path: str) -> List[Dict[str, str]]:
+    """Lê CSV com vírgula, ponto e vírgula ou tab (detecta sozinho) e BOM do Excel."""
+    import csv  # local para não pesar nos scripts que não usam
+    with open(path, newline="", encoding="utf-8-sig") as fh:
+        sample = fh.read(4096)
+        fh.seek(0)
+        try:
+            dialect = csv.Sniffer().sniff(sample, delimiters=",;\t")
+        except csv.Error:
+            dialect = csv.excel
+        return list(csv.DictReader(fh, dialect=dialect))
+
+
+def find_column(rows: List[Dict[str, str]], aliases: List[str], want_url: bool = False) -> Optional[str]:
+    """Acha a coluna pelo nome (sem acento/caixa); se want_url, cai para a 1ª coluna que contém URLs."""
+    if not rows:
+        return None
+    cols = list(rows[0].keys())
+    wanted = [normalize(a) for a in aliases]
+    for col in cols:
+        if col and normalize(col) in wanted:
+            return col
+    for w in wanted:  # a ordem dos apelidos define a prioridade
+        for col in cols:
+            if col and w in normalize(col):
+                return col
+    if want_url:
+        for col in cols:
+            if col and is_url((rows[0].get(col) or "").strip()):
+                return col
+    return None
+
+
+def to_int(value: Optional[str]) -> int:
+    digits = re.sub(r"[^\d]", "", value or "")
+    return int(digits) if digits else 0

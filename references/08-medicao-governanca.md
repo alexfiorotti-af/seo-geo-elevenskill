@@ -4,7 +4,7 @@
 
 | Ferramenta | Configurar | Olhar com frequência |
 |---|---|---|
-| **Google Search Console** | Propriedade de domínio (verificação por DNS); envio do sitemap | Desempenho (consultas, páginas, CTR), Indexação de páginas, Core Web Vitals, relatório de IA generativa, Ações manuais, Segurança |
+| **Google Search Console** | Propriedade de domínio (verificação por DNS); envio do sitemap | Desempenho (consultas, páginas, CTR), Indexação de páginas, Core Web Vitals, relatório de IA generativa, Links (exportar mensalmente), Ações manuais, Segurança |
 | **Bing Webmaster Tools** | Importar do Search Console; sitemap; IndexNow | AI Performance (citações no Copilot, consultas de grounding), Search Performance, Site Scan |
 | **GA4** (ou analytics equivalente com consentimento) | Grupo de canais "IA" (abaixo); conversões (WhatsApp, formulário, compra) | Sessões e conversões orgânicas e de IA por página de entrada |
 | **Perfil da Empresa no Google / Bing Places** | Mesmo NAP do site | Ligações, rotas, cliques no site |
@@ -30,9 +30,13 @@ empresa publica (OpenAI, Perplexity e Google publicam as suas; Anthropic também
 | 0 a 4 semanas após publicar | Páginas indexadas / páginas no sitemap | Erros de rastreio, Core Web Vitals |
 | 1 a 3 meses | Impressões e posição média das consultas-alvo | Impressões em recursos de IA, citações no Bing |
 | 3 meses em diante | Cliques e **conversões** orgânicas e de IA | CTR por página, menções em amostragem de IA |
+| Contínuo (autoridade) | Domínios de referência **relevantes** conquistados por mês | Links perdidos e recuperados, páginas linkadas com 404, menções da marca com e sem link, tráfego de referência e conversões vindas de links, distribuição de âncoras e atributos |
 
 Com respostas de IA ocupando o topo, impressões podem subir enquanto cliques caem. Por isso o KPI
 final é conversão (contato, venda), não clique.
+
+Para autoridade, conte **domínios relevantes**, não links brutos: dez links de um mesmo diretório
+valem menos que um de um jornal da cidade. Detalhes em `10-autoridade-links-mencoes.md`.
 
 ## 3. Políticas de spam do Google (o que derruba um site)
 
@@ -55,8 +59,8 @@ Links pagos ou patrocinados são permitidos com `rel="sponsored"` (e `rel="ugc"`
 |---|---|
 | A cada publicação | Title/description no lint; JSON-LD validado; links internos de entrada; sitemap atualizado; IndexNow enviado; pedido de indexação no GSC para páginas importantes |
 | Semanal | Erros novos no GSC (indexação, ações manuais, segurança) |
-| Mensal | Desempenho por cluster; páginas com impressões e CTR baixo (revisar title/description); amostragem de IA; links quebrados |
-| Trimestral | Revisão do mapa de palavras-chave, canibalização, poda e atualização de conteúdo; auditoria completa com os scripts |
+| Mensal | Desempenho por cluster; páginas com impressões e CTR baixo (revisar title/description); amostragem de IA; `crawl_site.py` (links quebrados, órfãs); exportar Links do Search Console e rodar `verify_backlinks.py destinos` e `origens`; alertas de menção da marca |
+| Trimestral | Revisão do mapa de palavras-chave, canibalização, poda e atualização de conteúdo; auditoria completa com os scripts; revisão do plano de autoridade (o que trouxe links e menções, o que não trouxe) |
 | Após atualização do Google | Esperar a conclusão do rollout + 1 semana antes de concluir algo; comparar períodos equivalentes |
 
 ## 5. Queda de tráfego: árvore de diagnóstico
@@ -73,7 +77,12 @@ Links pagos ou patrocinados são permitidos com `rel="sponsored"` (e `rel="ugc"`
      conteúdo das páginas afetadas (originalidade, experiência, utilidade) e espere a próxima.
    - Spam update: revise as políticas acima com honestidade.
 5. **Ação manual?** Search Console → Ações manuais. Se houver, corrija e peça reconsideração.
-6. **Mudou o resultado da busca?** Pesquise os termos: entrou AI Overview, mapa, vídeo ou
+   Ação por "links não naturais" pede limpeza do perfil (remover links, e só então rejeitar o que
+   sobrar; ver `10-autoridade-links-mencoes.md`, seção 7).
+6. **Perdeu links importantes?** Compare a exportação de Links do Search Console com a anterior e
+   rode `verify_backlinks.py`: páginas linkadas que passaram a dar 404 (deploy, migração) e
+   parcerias encerradas explicam quedas graduais em páginas específicas.
+7. **Mudou o resultado da busca?** Pesquise os termos: entrou AI Overview, mapa, vídeo ou
    concorrente novo? Se a resposta passou a aparecer na própria busca, ajuste o objetivo para
    ser citado (pilar 10) e trabalhe a fase de decisão (comparativos, preço, cases).
 
@@ -84,6 +93,8 @@ Antes:
 - Mapa de redirects 1:1 (URL antiga → URL nova equivalente), nunca tudo para a home.
 - Preserve titles, descriptions, H1, conteúdo e JSON-LD das páginas que trazem tráfego.
 - Baixe dados de referência (90 dias de GSC por página) para comparar depois.
+- Exporte "Páginas mais linkadas" do Search Console: **toda página com backlink precisa de
+  redirect** para a equivalente, mesmo que não tenha tráfego.
 
 No dia:
 - Redirects 301 ativos, sitemap novo enviado, robots.txt de produção (não o de homologação),
@@ -94,3 +105,5 @@ No dia:
 Depois (4 a 8 semanas):
 - Acompanhe indexação e 404 no GSC diariamente na primeira semana.
 - Compare impressões e cliques por página com a referência; corrija redirects faltantes.
+- Rode `verify_backlinks.py destinos` com a exportação feita antes da migração (URLs antigas):
+  nenhuma pode responder 404. Rode `crawl_site.py` no site novo para links internos antigos.

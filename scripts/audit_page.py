@@ -39,6 +39,7 @@ class PageParser(HTMLParser):
     def __init__(self) -> None:
         super().__init__(convert_charrefs=True)
         self.html_lang: Optional[str] = None
+        self.base_href: Optional[str] = None
         self.titles: List[str] = []
         self.metas: List[Dict[str, str]] = []
         self.links: List[Dict[str, str]] = []
@@ -75,6 +76,10 @@ class PageParser(HTMLParser):
         elif tag == "img":
             self.images.append({k: attrs.get(k) if k in attrs else None
                                 for k in ("src", "alt", "width", "height", "loading", "fetchpriority")})
+            if self._anchor is not None:
+                self._anchor["img_alt"] = attrs.get("alt", "")
+        elif tag == "base" and "href" in attrs:
+            self.base_href = attrs.get("href")
         elif tag == "a":
             self._anchor = {"href": attrs.get("href") if "href" in attrs else None,
                             "rel": attrs.get("rel", ""), "text": [],

@@ -18,7 +18,8 @@ ao corrigi-los. Sem jargão.
 | 7 | Responsivo, semântico, agentes | | |
 | 8 | Metadados | | |
 | 9 | Palavras-chave e conteúdo | | |
-| 10 | GEO | | |
+| 10a | GEO: conteúdo citável, entidade, autoria | | |
+| 10b | Autoridade fora do site: links e menções | | |
 | 11 | Medição e governança | | |
 
 ## Achados priorizados
@@ -34,12 +35,15 @@ Prioridade = impacto × facilidade. Bloqueios de rastreio/indexação sempre pri
 ## Plano de 30 / 60 / 90 dias
 - **30 dias:** P0 e P1 técnicos; medição configurada.
 - **60 dias:** metadados, dados estruturados, links internos, páginas de serviço.
-- **90 dias:** conteúdo novo por cluster, GEO, entidade e menções.
+- **90 dias:** conteúdo novo por cluster, GEO, entidade e plano de autoridade (recuperar links
+  perdidos, perfis e relações locais, um ativo linkável, imprensa).
 
 ## Pendências do dono do site
 - Acessos (Search Console, Bing WMT, analytics, hospedagem/DNS)
 - Dados reais a confirmar (preços, endereço, credenciais, casos)
 - Decisão sobre robôs de treino de IA
+- Exportações de Links do Search Console e acesso a ferramenta de backlinks, se houver
+- Relações existentes que podem gerar links (fornecedores, associações, parceiros)
 
 ## Próxima verificação
 Data e o que será comparado (indexação, impressões por cluster, Core Web Vitals, citações de IA).

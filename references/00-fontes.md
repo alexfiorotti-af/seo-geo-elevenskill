@@ -28,6 +28,10 @@ fonte primária (documentação oficial) a blogs.
 | robots.txt (RFC 9309) | https://www.rfc-editor.org/rfc/rfc9309 |
 | Schema.org | https://schema.org/ |
 | Universal Commerce Protocol (Google, jan/2026) | https://ucp.dev/ |
+| Política de link spam (dentro das políticas de spam: compra/venda, trocas excessivas, automação, publieditorial, diretórios, widgets, fóruns) | https://developers.google.com/search/docs/essentials/spam-policies#link-spam |
+| Qualificar links de saída (`sponsored`, `ugc`, `nofollow` como indicações) | https://developers.google.com/search/docs/crawling-indexing/qualify-outbound-links |
+| Ferramenta de rejeição de links (quando usar e quando não usar) | https://support.google.com/webmasters/answer/2648487 |
+| Apple Business (substituiu o Apple Business Connect em 14/04/2026; gerencia o cartão no Apple Maps) | https://www.apple.com/br/newsroom/2026/03/introducing-apple-business/ |
 
 ## Pesquisas e dados de mercado usados
 
@@ -39,6 +43,8 @@ fonte primária (documentação oficial) a blogs.
 | Participação no tráfego web de IA generativa (mai/2026): ChatGPT ~53%, Gemini ~27–28%, Claude ~9% | Similarweb, Generative AI Landscape 2026 |
 | Participação de buscadores no Brasil (out/2026): Google ~92%, Bing ~6,6% | StatCounter |
 | Bing Webmaster Tools lança relatório "AI Performance" com citações no Copilot (fev/2026) | Bing Webmaster Tools / cobertura especializada |
+| Visibilidade de marcas em AI Overviews (75 mil marcas, correlação de Spearman): menções da marca na web 0,664; âncoras com a marca 0,527; volume de busca da marca 0,392; número de backlinks 0,218 | Ahrefs, mai/2025 (atualizado em 2026) |
+| Google (John Mueller, jul/2021): troca sistemática de links é contra as diretrizes "mesmo que seja tematicamente relevante"; se for a maior parte dos links do site, pode gerar ação manual | Search Engine Roundtable, cobertura do Google Search Central Hangout |
 
 ## Linha do tempo de atualizações do Google em 2026 (confirmadas)
 

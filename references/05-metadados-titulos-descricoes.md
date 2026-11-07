@@ -43,6 +43,23 @@ caracteres). Abaixo de ~30 caracteres costuma faltar contexto.
 | Lista | `[N] [itens] para [objetivo]` | `7 cuidados depois do peeling` |
 | Contato/Sobre | `[Contato/Sobre] \| [Marca]` | `Contato \| Clínica Aurora` |
 
+### Sites em inglês para o mercado dos EUA
+| Tipo | Fórmula | Exemplo (fictício) |
+|---|---|---|
+| Home (negócio local) | `[Brand] \| [Service] in [City], [ST]` | `Aurora Home Co. \| Kitchen & Bath Remodeling in Orlando, FL` |
+| Serviço local | `[Service] in [City], [ST] \| [Brand]` | `Kitchen Remodeling in Orlando, FL \| Aurora Home Co.` |
+| Serviço + diferencial | `[Service]: [verifiable benefit] \| [Brand]` | `Bathroom Remodeling: Fixed-Price Quotes \| Aurora Home Co.` |
+| Página de preço | `[Service] Cost in [City] ([Year]): [scope]` | `Kitchen Remodel Cost in Orlando (2026): Price Ranges` |
+| Artigo "como" | `How to [result]: [scope]` | `How to Choose Bathroom Tile: A Room-by-Room Guide` |
+| Comparativo | `[A] vs. [B]: [decision criterion]` | `Quartz vs. Granite Countertops: Cost and Upkeep` |
+
+- Title Case é o padrão americano; sigla do estado (`FL`, `MA`, `TX`) economiza largura.
+- Não use "near me" no title: o Google já resolve a proximidade pela localização de quem busca.
+- Description: área atendida, prova verificável ("licensed & insured" só se for verdade) e próximo
+  passo ("Call for a free estimate").
+- Negócio de brasileiros nos EUA com site bilíngue: URLs separadas por idioma, com
+  `hreflang="en-US"` e `hreflang="pt-US"` (português para quem está nos EUA), recíprocos (pilar 3).
+
 ### Erros que fazem o Google reescrever
 - Title genérico ("Início", "Serviços", "Página 2").
 - Mesmo title em várias páginas, ou mudando só um detalhe.
