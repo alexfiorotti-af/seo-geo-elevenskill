@@ -57,10 +57,15 @@ references/                  um arquivo por grupo de pilares, carregado sob dema
   08-medicao-governanca.md
   09-stacks.md               Next.js, Astro, HTML estático na Vercel, WordPress
   10-autoridade-links-mencoes.md  semáforo de táticas de links, roteiros BR/EUA/SaaS/e-commerce, auditoria de backlinks
+  11-seo-local.md            perfis (Google, Apple, Bing), NAP, citações, avaliações, páginas por unidade
+  12-internacional-hreflang.md   estrutura por idioma/país, hreflang recíproco, tradução, GEO multilíngue
+  13-ecommerce.md            filtros, paginação, ciclo de vida do produto, Product/Offer, feed, compra por agentes
+data/atualizacoes-google.json    atualizações do Google (core, spam, políticas, recursos, rastreio) com fonte oficial
 templates/                   robots.txt, llms.txt, <head>, JSON-LD, mapa de palavras-chave, brief, relatório,
-                             modelos de abordagem (PT/EN), planilha de prospecção de links
-scripts/                     auditoria e validação (Python 3.9+, só biblioteca padrão)
-tests/                       testes e fixtures fictícios
+                             modelos de abordagem (PT/EN), prospecção de links, citações locais,
+                             amostragem de IA, marca do relatório (exemplo)
+scripts/                     20 ferramentas de auditoria e validação (Python 3.9+, só biblioteca padrão)
+tests/                       testes com servidor HTTP local e fixtures fictícios
 ```
 
 ## Ferramentas
@@ -74,6 +79,30 @@ python3 scripts/verify_backlinks.py destinos paginas-mais-linkadas.csv     # pá
 python3 scripts/verify_backlinks.py origens links.csv --dominio seusite.com.br  # links perdidos, rel, âncoras
 python3 scripts/lint_meta.py mapa.csv                                      # titles e descriptions em lote
 INDEXNOW_KEY=... python3 scripts/indexnow_submit.py --host seusite.com.br urls.txt
+
+# servidor, robôs e IA
+python3 scripts/check_server.py https://seusite.com.br                    # https, www, soft 404, 2 MB, compressão, segurança
+python3 scripts/check_agents.py https://seusite.com.br/                   # o que navegador × robôs de IA recebem (WAF, cloaking)
+python3 scripts/llms_txt.py gerar https://seusite.com.br > llms.txt        # rascunho do llms.txt a partir do sitemap
+python3 scripts/llms_txt.py validar https://seusite.com.br --verificar-links
+
+# dados estruturados, conteúdo e local
+python3 scripts/lint_schema.py https://seusite.com.br/servicos/x/         # JSON-LD: obrigatórios, datas, preço, tipos aposentados
+python3 scripts/analyze_content.py https://seusite.com.br/blog/x/ --palavra "termo"  # citabilidade e legibilidade pt-BR
+python3 scripts/check_local.py https://seusite.com.br/ --citacoes citacoes.csv       # consistência de NAP
+python3 scripts/pagespeed.py https://seusite.com.br/                      # Core Web Vitals de campo e laboratório
+
+# dados do Search Console, palavras-chave e IA (offline, a partir de CSV)
+python3 scripts/gsc_opportunities.py Consultas.csv --marca "suamarca"     # quase lá, CTR baixo, canibalização
+python3 scripts/cluster_serp.py serps.csv --mapa mapa.csv                  # agrupar palavras por intenção (SERP)
+python3 scripts/ai_visibility.py amostragem.csv                            # taxa de citação da marca nas IAs
+python3 scripts/google_updates.py cruzar datas.csv                         # quedas × atualizações do Google
+
+# monitoramento e relatório
+python3 scripts/drift.py foto --sitemap https://seusite.com.br/sitemap.xml --saida relatorios/antes.json
+python3 scripts/drift.py comparar relatorios/antes.json                    # o que mudou desde a foto
+python3 scripts/report.py relatorios/*.json --site https://seusite.com.br --saida relatorios/relatorio.html
+
 python3 -m unittest discover -s tests                                      # testes
 ```
 
@@ -105,6 +134,15 @@ quando ela existe, e o Git nunca a envia para o repositório público.
 Busca muda rápido. As afirmações sobre o Google e as IAs estão datadas em
 `references/00-fontes.md` (estado de novembro de 2026). Ao atualizar, cite a fonte primária e
 a data, e rode os testes.
+
+## Referências e inspiração
+
+A cobertura de servidor, robôs de IA, citabilidade, schema, SEO local, hreflang, monitoramento e
+relatórios foi ampliada depois de comparar esta skill com dois projetos abertos (MIT) que valem a
+visita: [claude-seo](https://github.com/AgriciDaniel/claude-seo) e
+[geo-seo-claude](https://github.com/zubair-trabzada/geo-seo-claude). Nenhum código foi copiado:
+as ferramentas daqui seguem o padrão desta skill (sem dependências, sem chamadas a serviços pagos,
+documentação em pt-BR e fontes oficiais datadas).
 
 ## Contribuindo
 

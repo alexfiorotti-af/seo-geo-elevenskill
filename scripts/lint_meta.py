@@ -7,7 +7,9 @@ O formato de templates/mapa-de-palavras-chave.csv já serve.
 
 Verifica: ausência, tamanho (caracteres e largura estimada em pixels), duplicados entre
 páginas, palavra principal no title e na description, repetição da palavra (stuffing),
-marca no meio do title, title em maiúsculas, ano antigo no title, texto de modelo esquecido.
+marca no meio do title, title em maiúsculas, ano antigo no title, texto de modelo esquecido e
+metadados em série (o mesmo modelo de title/description trocando só uma palavra em muitas páginas,
+sinal de páginas-porta ou de conteúdo em escala se as páginas também forem quase iguais).
 
 Uso:
   python3 lint_meta.py mapa.csv
@@ -115,6 +117,7 @@ def lint(rows: List[Dict[str, str]], max_title_px: int) -> List[Dict[str, Any]]:
         results.append({"url": url, "title": title, "title_px": px, "title_car": len(title),
                         "description_car": len(desc), "achados": issues})
 
+    templated_findings(results, rows)
     for norm_title, urls in titles.items():
         if len(urls) > 1:
             for r in results:
@@ -126,6 +129,41 @@ def lint(rows: List[Dict[str, str]], max_title_px: int) -> List[Dict[str, Any]]:
                 if r["url"] in urls:
                     r["achados"].append({"nivel": "ERRO", "mensagem": f"Description duplicada em {len(urls)} páginas."})
     return results
+
+
+def skeleton(text: str, df: Dict[str, int]) -> str:
+    """Troca as palavras que só aparecem neste texto por {x}: 'Dentista em {x} | Marca'."""
+    toks = re.findall(r"\w+|[^\w\s]", normalize(text))
+    out: List[str] = []
+    for t in toks:
+        tok = "{x}" if df.get(t, 0) <= 1 and t.isalnum() else t
+        if not (tok == "{x}" and out and out[-1] == "{x}"):
+            out.append(tok)
+    return " ".join(out)
+
+
+def templated_findings(results: List[Dict[str, Any]], rows: List[Dict[str, str]], min_group: int = 5) -> None:
+    n = len(rows)
+    if n < min_group:
+        return
+    for field, label in (("title", "title"), ("description", "description")):
+        texts = [pick(r, field) for r in rows]
+        df: Dict[str, int] = defaultdict(int)
+        for t in texts:
+            for tok in set(re.findall(r"\w+", normalize(t))):
+                df[tok] += 1
+        groups: Dict[str, List[int]] = defaultdict(list)
+        for i, t in enumerate(texts):
+            if t:
+                sk = skeleton(t, df)
+                if "{x}" in sk and len(sk.replace("{x}", "").split()) >= 2:
+                    groups[sk].append(i)
+        for sk, idx in groups.items():
+            if len(idx) >= min_group and len(idx) >= 0.3 * n:
+                msg = (f"{label} em série: {len(idx)} páginas com o mesmo modelo \"{sk}\". Se o conteúdo das páginas "
+                       "também só troca essa palavra, é risco de página-porta/conteúdo em escala; garanta conteúdo único em cada uma.")
+                for i in idx:
+                    results[i]["achados"].append({"nivel": "AVISO", "mensagem": msg})
 
 
 def read_csv(path: str) -> List[Dict[str, str]]:

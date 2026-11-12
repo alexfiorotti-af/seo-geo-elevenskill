@@ -1,0 +1,5 @@
+data,plataforma,prompt,intencao,marca_citada,url_citada,posicao_marca,concorrentes_citados,fontes_citadas,sentimento,observacoes
+2026-11-05,ChatGPT,"Qual a melhor clínica de limpeza de pele em Vitória?",decisao,sim,https://clinica-aurora.test/servicos/limpeza-de-pele/,2,Concorrente A; Concorrente B,guia-local.test; clinica-aurora.test,positivo,Citou preço e endereço
+2026-11-05,Perplexity,"Qual a melhor clínica de limpeza de pele em Vitória?",decisao,não,,,Concorrente A,guia-local.test; revista-beleza.test,,
+2026-11-05,Google AI Mode,"Limpeza de pele dói?",informacional,sim,https://clinica-aurora.test/blog/limpeza-de-pele-doi/,1,,clinica-aurora.test,neutro,
+2026-11-05,Gemini,"Quanto custa limpeza de pele profunda em Vitória?",decisao,não,,,Concorrente B,revista-beleza.test,,Sem preço da marca na resposta

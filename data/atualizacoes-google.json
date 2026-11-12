@@ -1,0 +1,34 @@
+{
+  "descricao": "Atualizações do Google que afetam ranqueamento, políticas e recursos de busca. Datas no fuso de Brasília, conforme o painel de status e as notas oficiais. 'fim' nulo = rollout sem data de conclusão registrada aqui. Confira o painel de status antes de concluir algo.",
+  "atualizado_em": "2026-11-12",
+  "fontes_gerais": [
+    "https://status.search.google.com/products/rGHU1u87FJnkP6W2GwMi/history",
+    "https://developers.google.com/search/updates",
+    "https://developers.google.com/crawling/docs/changelog"
+  ],
+  "eventos": [
+    {"inicio": "2024-11-21", "fim": null, "tipo": "recurso", "nome": "Caixa de busca de sitelinks (SearchAction) deixa de ser exibida", "fonte": "https://developers.google.com/search/blog/2024/10/sitelinks-search-box"},
+    {"inicio": "2025-03-13", "fim": "2025-03-27", "tipo": "core", "nome": "Core update de março de 2025", "fonte": "https://status.search.google.com/"},
+    {"inicio": "2025-06-12", "fim": null, "tipo": "recurso", "nome": "Simplificação dos resultados: Book Actions, Course Info, ClaimReview, Estimated Salary, Learning Video, Special Announcement e Vehicle Listing deixam de ser exibidos", "fonte": "https://developers.google.com/search/blog/2025/06/simplifying-search-results"},
+    {"inicio": "2025-06-30", "fim": "2025-07-17", "tipo": "core", "nome": "Core update de junho de 2025", "fonte": "https://status.search.google.com/"},
+    {"inicio": "2025-08-26", "fim": "2025-09-22", "tipo": "spam", "nome": "Spam update de agosto de 2025", "fonte": "https://status.search.google.com/"},
+    {"inicio": "2025-12-11", "fim": "2025-12-29", "tipo": "core", "nome": "Core update de dezembro de 2025", "fonte": "https://status.search.google.com/"},
+    {"inicio": "2026-02-05", "fim": "2026-02-27", "tipo": "discover", "nome": "Discover core update", "fonte": "https://status.search.google.com/"},
+    {"inicio": "2026-03-20", "fim": null, "tipo": "rastreio", "nome": "Novo user-agent Google-Agent (agentes do Google agindo a pedido do usuário)", "fonte": "https://developers.google.com/crawling/docs/changelog"},
+    {"inicio": "2026-03-24", "fim": "2026-03-25", "tipo": "spam", "nome": "Spam update de março de 2026", "fonte": "https://status.search.google.com/"},
+    {"inicio": "2026-03-27", "fim": "2026-04-08", "tipo": "core", "nome": "Core update de março de 2026", "fonte": "https://status.search.google.com/"},
+    {"inicio": "2026-03-31", "fim": null, "tipo": "rastreio", "nome": "Google documenta limite de 2 MB por URL para o Googlebot (64 MB para PDF; 15 MB para os demais crawlers)", "fonte": "https://developers.google.com/search/blog/2026/03/crawler-blog-post"},
+    {"inicio": "2026-04-13", "fim": "2026-06-15", "tipo": "politica", "nome": "Nova política de spam: sequestro do botão Voltar (back button hijacking); aplicação a partir de 15/06/2026", "fonte": "https://developers.google.com/search/blog/2026/04/back-button-hijacking"},
+    {"inicio": "2026-05-07", "fim": null, "tipo": "recurso", "nome": "Resultados enriquecidos de FAQ deixam de aparecer para todos os sites", "fonte": "https://developers.google.com/search/updates"},
+    {"inicio": "2026-05-15", "fim": null, "tipo": "politica", "nome": "Guia oficial de otimização para recursos de IA generativa; políticas de spam valem para AI Overviews e AI Mode", "fonte": "https://developers.google.com/search/docs/fundamentals/ai-optimization-guide"},
+    {"inicio": "2026-05-21", "fim": "2026-06-02", "tipo": "core", "nome": "Core update de maio de 2026", "fonte": "https://status.search.google.com/"},
+    {"inicio": "2026-06-24", "fim": "2026-06-26", "tipo": "spam", "nome": "Spam update de junho de 2026", "fonte": "https://status.search.google.com/"},
+    {"inicio": "2026-07-16", "fim": null, "tipo": "rastreio", "nome": "User-agent do NotebookLM passa a ser Google-GeminiNotebook", "fonte": "https://developers.google.com/crawling/docs/changelog"},
+    {"inicio": "2026-08-18", "fim": "2026-08-21", "tipo": "spam", "nome": "Spam update de agosto de 2026", "fonte": "https://status.search.google.com/"},
+    {"inicio": "2026-08-28", "fim": null, "tipo": "politica", "nome": "Política de abuso de reputação de site: ações manuais deixam de valer para buscas no Espaço Econômico Europeu", "fonte": "https://developers.google.com/search/blog/2026/08/update-site-reputation-policy"},
+    {"inicio": "2026-08-31", "fim": null, "tipo": "recurso", "nome": "Controle de exclusão dos recursos de IA generativa no Search Console disponível para todos os sites", "fonte": "https://developers.google.com/search/blog/2026/06/gen-ai-performance-reports"},
+    {"inicio": "2026-09-24", "fim": "2026-10-08", "tipo": "spam", "nome": "Spam update de setembro de 2026", "fonte": "https://status.search.google.com/"},
+    {"inicio": "2026-10-06", "fim": null, "tipo": "rastreio", "nome": "Documentação de redução do ritmo de rastreio passa a detalhar Retry-After", "fonte": "https://developers.google.com/crawling/docs/changelog"},
+    {"inicio": "2026-10-23", "fim": null, "tipo": "rastreio", "nome": "Especificação do robots.txt recomenda percent-encoding nos caminhos das regras", "fonte": "https://developers.google.com/crawling/docs/changelog"}
+  ]
+}

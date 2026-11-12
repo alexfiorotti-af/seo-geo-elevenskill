@@ -46,7 +46,19 @@ compensa um erro aqui. Em auditoria, qualquer achado destes pilares tem priorida
   índice use `noindex` (e deixe rastrear, senão o robô não vê o `noindex`).
 - Nunca bloqueie CSS, JS ou imagens necessários para renderizar a página.
 - Declare os sitemaps: `Sitemap: https://dominio/sitemap.xml` (URL absoluta).
-- Erro 5xx no robots.txt faz o Google pausar o rastreio do site. Monitore.
+- Erro 5xx **ou 429** no robots.txt faz o Google pausar o rastreio do site (429 é tratado como erro de
+  servidor). Cuidado com limite de taxa e WAF na frente do robots.txt. Monitore.
+- O Google lê até 500 KiB do robots.txt e segue até 5 redirects. Desde out/2026 a especificação
+  recomenda percent-encoding em caminhos com caracteres especiais nas regras.
+- `Crawl-delay`: o Google ignora; Bing e Yandex respeitam. Valor alto atrasa o Bing/Copilot.
+- **Content-Signal** (`Content-Signal: search=yes, ai-input=yes, ai-train=no`): convenção proposta
+  pela Cloudflare para expressar preferência de uso (busca, resposta de IA em tempo real, treino).
+  Não bloqueia nada (quem decide acesso é Allow/Disallow), o rascunho no IETF expirou em abr/2026 e
+  nenhum buscador grande documentou que obedece. Se usar, lembre que **um robô com grupo próprio
+  não herda o grupo `*`**: repita a linha nos grupos nomeados.
+- Sites na Cloudflare podem ter um **bloco gerenciado** no robots.txt (bloqueio de robôs de treino e
+  Content-Signal) injetado pela CDN. Ele é editado no painel da Cloudflare, não no servidor.
+  `scripts/check_robots.py` mostra tudo isso por robô.
 
 ### Política para crawlers de IA (decisão do dono do site)
 
@@ -66,10 +78,22 @@ modelos). O padrão recomendado para negócios que querem clientes:
 | ClaudeBot | Anthropic | Treino de modelos | Decisão do dono |
 | PerplexityBot | Perplexity | Índice de busca (não é treino) | **Permitir** |
 | Perplexity-User | Perplexity | Acesso sob demanda (em geral ignora robots.txt) | Permitir |
+| Google-Agent | Google | Agentes do Google agindo a pedido do usuário (desde mar/2026; acionado pelo usuário, pode não seguir robots.txt) | Permitir |
+| Google-GeminiNotebook | Google | Gemini Notebook, ex-NotebookLM (nome novo desde jul/2026; o antigo `Google-NotebookLM` vale na transição) | Permitir |
+| DuckAssistBot | DuckDuckGo | Respostas com IA do DuckDuckGo | Permitir |
 | Applebot | Apple | Siri, Spotlight | Permitir |
 | Applebot-Extended | Apple | Treino (não afeta busca da Apple) | Decisão do dono |
 | Meta-ExternalAgent | Meta | Treino e recursos de IA da Meta | Decisão do dono |
 | CCBot | Common Crawl | Base aberta usada por muitos treinos | Decisão do dono |
+| Amazonbot, Bytespider | Amazon, ByteDance | Serviços de IA e treino | Decisão do dono |
+
+Robôs **acionados pelo usuário** (ChatGPT-User, Claude-User, Perplexity-User, Google-Agent,
+Google-GeminiNotebook) agem como um navegador a pedido de uma pessoa; o Google documenta que esse
+tipo de fetcher em geral ignora robots.txt. Bloqueio real, se necessário, é no servidor/WAF.
+
+**WAF e CDN:** proteção contra robôs (Cloudflare, Akamai, Vercel, Sucuri) às vezes devolve 403 ou
+desafio de JavaScript para robôs de IA de busca que o dono quer liberados. Teste com
+`scripts/check_agents.py` (compara o que navegador e cada robô recebem) e confirme nos logs.
 
 Modelo pronto: `templates/robots.txt`. Mudanças em robots.txt levam até ~24 h para valer
 para OpenAI e Perplexity. Verifique com `scripts/check_robots.py`.
@@ -104,12 +128,16 @@ também removem o snippet da busca comum.
 - O Google declarou que **não usa** e que ele não ajuda nem prejudica o ranqueamento. Alguns agentes
   e a categoria experimental "Agentic Browsing" do Lighthouse verificam a presença.
 - Faça só depois que os pilares 1 a 6 estiverem resolvidos. Modelo: `templates/llms.txt`.
+  `scripts/llms_txt.py gerar` monta um rascunho a partir do sitemap e `validar` confere formato,
+  links absolutos, links quebrados e instruções para IA (proibidas).
 - O conteúdo deve ser o mesmo que está no site. Nada de instruções para IAs nem afirmações que a página não sustenta.
 
 ### Orçamento de rastreio (sites grandes, acima de ~10 mil URLs ou atualização diária)
 - Elimine armadilhas: filtros e ordenações que geram URLs infinitas, calendários, busca interna indexável.
 - Bloqueie no robots.txt combinações de parâmetros sem valor de busca.
 - Mantenha o servidor rápido: o Google reduz o ritmo de rastreio quando o servidor fica lento ou responde 5xx/429.
+  Para reduzir o rastreio numa emergência, responda 503/429 com `Retry-After` por pouco tempo
+  (dias, não semanas), nunca bloqueie o site inteiro no robots.txt.
 - Logs do servidor mostram onde os robôs gastam tempo (pilar 11).
 
 ---
@@ -128,6 +156,8 @@ também removem o snippet da busca comum.
 
 - Não redirecione todas as páginas removidas para a home: o Google trata como soft 404.
 - Redirecione `http→https` e a variante de host (`www`) com 301, em um único salto.
+- `scripts/check_server.py` confere http→https, variante de host, soft 404 (URL inexistente
+  respondendo 200), compressão, cache, charset, X-Robots-Tag e cabeçalhos de segurança.
 
 ### Canonical
 - Toda página indexável tem `<link rel="canonical" href="URL-absoluta-de-si-mesma">`.
@@ -147,6 +177,10 @@ também removem o snippet da busca comum.
 - Para o mesmo conteúdo em idiomas/regiões diferentes: `pt-BR`, `en-US`, `es` etc.
 - Cada versão lista **todas** as versões, incluindo ela mesma, e as declarações são recíprocas.
 - Inclua `x-default` para a página de seleção ou versão padrão.
+- Códigos: idioma ISO 639-1 + região ISO 3166-1 opcional (`en-GB`, não `en-UK`; `ja`, não `jp`).
+- Cada alternativa precisa responder 200, ser indexável e canônica de si mesma.
+- `scripts/crawl_site.py` verifica reciprocidade, autorreferência, códigos e alvos. Detalhes em
+  `12-internacional-hreflang.md`.
 - Use URLs separadas por idioma (`/en/`, subdomínio ou domínio). Nunca troque idioma por cookie ou IP na mesma URL.
 - `<html lang="pt-BR">` em todas as páginas.
 
@@ -167,6 +201,14 @@ Por quê: o Googlebot renderiza JavaScript (com atraso e custo), mas a maioria d
 (OpenAI, Anthropic, Perplexity e outros) lê só o HTML bruto. Uma SPA que monta o texto no cliente
 aparece vazia para eles. O Google também diz que processa JS "a menos que bloqueado"; não conte
 com isso para o essencial.
+
+### Limite de tamanho (Google, mar/2026)
+- O Googlebot busca **até 2 MB por URL** (cabeçalhos da resposta incluídos) e ignora o que vier
+  depois; PDF tem limite de 64 MB; os demais crawlers do Google, 15 MB.
+- Cada recurso (CSS, JS) tem seu próprio limite de 2 MB e não conta no tamanho da página.
+- Páginas que passam disso costumam ter SVG, CSS, JSON de estado (`__NEXT_DATA__`) ou base64
+  embutidos. Mova para arquivos externos e mantenha o conteúdo principal no começo do HTML.
+- `scripts/audit_page.py` e `scripts/check_server.py` acusam HTML acima de ~1,5 MB.
 
 ### Escolha da estratégia
 | Estratégia | Quando usar | Observação |

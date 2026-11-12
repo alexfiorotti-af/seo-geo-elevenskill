@@ -8,7 +8,9 @@ Encontra (pilares 1, 2, 3 e 9):
   - inconsistências do sitemap: URL com noindex, fora do ar, redirecionada ou com canonical para outra;
   - páginas indexáveis fora do sitemap;
   - páginas profundas (mais de 3 cliques da página inicial);
-  - titles duplicados entre páginas indexáveis.
+  - titles duplicados entre páginas indexáveis;
+  - hreflang: sem autorreferência, sem retorno (não recíproco), código de idioma/região inválido,
+    alternativa que não é 200/indexável/canônica e falta de x-default.
 
 Respeita o robots.txt (grupo '*' ou o do token seo-geo-elevenskill-audit) e espera entre requisições.
 
@@ -56,9 +58,15 @@ def allowed(rules, url: str) -> bool:
     return is_allowed(rules, (parts.path or "/") + (f"?{parts.query}" if parts.query else ""))[0]
 
 
+HREFLANG_RE = re.compile(r"^[a-z]{2,3}(-[a-z]{4})?(-([a-z]{2}|\d{3}))?$")
+# erros comuns de código (idioma ou região que não existe no ISO 639-1 / ISO 3166-1)
+HREFLANG_FIX = {"en-uk": "en-gb", "jp": "ja", "cn": "zh", "gr": "el", "dk": "da", "br": "pt-br",
+                "ua": "uk", "kr": "ko", "cz": "cs", "pt-pt-br": "pt-br", "es-la": "es-419", "en-eu": "en"}
+
+
 def new_page(url: str, depth: int) -> Dict[str, Any]:
     return {"url": url, "profundidade": depth, "status": None, "final": None, "redirects": [],
-            "html": False, "title": "", "canonical": None, "noindex": False}
+            "html": False, "title": "", "canonical": None, "noindex": False, "hreflang": []}
 
 
 def visit(url: str, depth: int, site: str, pages: Dict[str, Dict[str, Any]]):
@@ -97,6 +105,9 @@ def visit(url: str, depth: int, site: str, pages: Dict[str, Dict[str, Any]]):
     robots = " ".join(m.get("content", "") for m in parser.metas if m.get("name", "").lower() in ("robots", "googlebot"))
     robots += " " + f.headers.get("x-robots-tag", "")
     page["noindex"] = bool(re.search(r"\b(noindex|none)\b", robots.lower()))
+    page["hreflang"] = [(l.get("hreflang", "").strip().lower(), clean(urllib.parse.urljoin(base, l.get("href", ""))))
+                        for l in parser.links
+                        if "alternate" in l.get("rel", "").lower().split() and l.get("hreflang") and l.get("href")]
     return page, parser
 
 
@@ -139,6 +150,10 @@ def crawl(start: str, max_pages: int, delay: float, follow_params: bool,
         if parser is None:
             continue
         base = parser.base_href or page["url"]
+        for _lang, alt in page["hreflang"]:  # versões em outros idiomas também entram no rastreio
+            if is_internal(alt, site) and alt not in queued and alt not in pages:
+                queued.add(alt)
+                queue.append((alt, depth + 1))
         for a in parser.anchors:
             href = (a.get("href") or "").strip()
             if not href or href.startswith(("#", "mailto:", "tel:", "javascript:", "data:")):
@@ -271,6 +286,8 @@ def analyse(start, pages, inlinks, sitemap_urls, sitemap_notes, skipped_robots, 
     for n in sitemap_notes:
         add("AVISO", n)
 
+    hreflang_findings(pages, add)
+
     noindex = [p["url"] for p in html_ok if p["noindex"]]
     if noindex:
         add("INFO", f"{len(noindex)} página(s) com noindex (confirme que é intencional):", noindex)
@@ -299,6 +316,59 @@ def analyse(start, pages, inlinks, sitemap_urls, sitemap_notes, skipped_robots, 
         "erros": sum(1 for f in findings if f["nivel"] == "ERRO"),
         "paginas": list(pages.values()),
     }
+
+
+def hreflang_findings(pages: Dict[str, Dict[str, Any]], add) -> None:
+    with_alt = [p for p in pages.values() if p["html"] and p.get("hreflang")]
+    if not with_alt:
+        return
+    by_url: Dict[str, Dict[str, Any]] = {}
+    for p in pages.values():
+        by_url[p["url"]] = p
+        if p.get("final"):
+            by_url.setdefault(p["final"], p)
+    bad_code, no_self, no_return, bad_target, no_default, dup_lang = [], [], [], [], [], []
+    for p in with_alt:
+        me = {p["url"], p.get("final"), p.get("canonical")} - {None}
+        langs = [lang for lang, _ in p["hreflang"]]
+        targets = {u for _, u in p["hreflang"]}
+        for lang in sorted(set(langs)):
+            if lang == "x-default":
+                continue
+            if lang in HREFLANG_FIX or not HREFLANG_RE.match(lang):
+                fix = HREFLANG_FIX.get(lang)
+                bad_code.append(f"{p['url']}: \"{lang}\"" + (f" (use \"{fix}\")" if fix else ""))
+        if len(langs) != len(set(langs)):
+            dup_lang.append(p["url"])
+        if not me & targets:
+            no_self.append(p["url"])
+        if "x-default" not in langs:
+            no_default.append(p["url"])
+        for lang, alt in p["hreflang"]:
+            if alt in me:
+                continue
+            q = by_url.get(alt)
+            if q is None:
+                continue
+            if q["status"] != 200 or q["redirects"] or q["noindex"] or (q["canonical"] and q["canonical"] not in (q["url"], q["final"])):
+                why = (f"responde {q['status']}" if q["status"] != 200 else "redireciona" if q["redirects"]
+                       else "tem noindex" if q["noindex"] else f"canonical para {q['canonical']}")
+                bad_target.append(f"{p['url']} → {lang}: {alt} ({why})")
+                continue
+            if q["html"] and not ({u for _, u in q.get("hreflang", [])} & me):
+                no_return.append(f"{p['url']} → {lang}: {alt} não aponta de volta")
+    if bad_target:
+        add("ERRO", f"{len(bad_target)} hreflang apontam para URL que não é 200, indexável e canônica:", bad_target)
+    if no_return:
+        add("ERRO", f"{len(no_return)} hreflang sem retorno (a outra versão não lista esta; o Google ignora o par):", no_return)
+    if bad_code:
+        add("ERRO", f"{len(bad_code)} código(s) hreflang inválido(s) (idioma ISO 639-1 + região ISO 3166-1 opcional):", bad_code)
+    if no_self:
+        add("AVISO", f"{len(no_self)} página(s) com hreflang sem autorreferência (cada versão deve listar a si mesma):", no_self)
+    if dup_lang:
+        add("AVISO", f"{len(dup_lang)} página(s) repetem o mesmo código hreflang para URLs diferentes:", dup_lang)
+    if no_default:
+        add("INFO", f"{len(no_default)} página(s) com hreflang sem x-default (recomendado para a versão padrão/seletor):", no_default)
 
 
 def to_md(r: Dict[str, Any]) -> str:

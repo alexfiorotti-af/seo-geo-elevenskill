@@ -26,7 +26,7 @@ from typing import Any, Dict, List, Optional
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _seo_common import (  # noqa: E402
-    DEFAULT_UA, DESC_MAX_CHARS, DESC_MIN_CHARS, TITLE_MAX_PX, TITLE_MIN_CHARS,
+    DEFAULT_UA, DESC_MAX_CHARS, DESC_MIN_CHARS, GOOGLEBOT_HTML_LIMIT, TITLE_MAX_PX, TITLE_MIN_CHARS,
     fetch, find_placeholders, is_url, pixel_width, same_site,
 )
 
@@ -154,8 +154,11 @@ def collect_types(node: Any, acc: List[str]) -> None:
 
 
 def audit(html: str, page_url: Optional[str], status: Optional[int] = None,
-          headers: Optional[Dict[str, str]] = None, redirects: Optional[List[str]] = None) -> Dict[str, Any]:
+          headers: Optional[Dict[str, str]] = None, redirects: Optional[List[str]] = None,
+          size_bytes: Optional[int] = None) -> Dict[str, Any]:
     headers = headers or {}
+    if size_bytes is None:
+        size_bytes = len(html.encode("utf-8"))
     p = PageParser()
     p.feed(html)
     p.close()
@@ -180,6 +183,15 @@ def audit(html: str, page_url: Optional[str], status: Optional[int] = None,
         for r in redirects:
             if r.startswith("302") or r.startswith("307"):
                 add("AVISO", "3", f"Redirect temporário ({r.split()[0]}); use 301/308 se a mudança for permanente.")
+
+    # --- Tamanho (pilar 4): o Googlebot lê só os primeiros 2 MB de cada URL (inclui cabeçalhos) ---
+    header_bytes = sum(len(k) + len(v) + 4 for k, v in headers.items())
+    total = size_bytes + header_bytes
+    if total > GOOGLEBOT_HTML_LIMIT:
+        add("ERRO", "4", f"HTML com {total / 1048576:.1f} MB: o Googlebot para de ler em 2 MB (cabeçalhos incluídos) "
+                         "e ignora o resto. Tire CSS/JS/SVG/JSON embutidos e mova o conteúdo principal para o início.")
+    elif total > GOOGLEBOT_HTML_LIMIT * 0.75:
+        add("AVISO", "4", f"HTML com {total / 1048576:.1f} MB, perto do limite de 2 MB do Googlebot.")
 
     # --- Robots ---
     robots_meta = " ".join(meta_content(p.metas, name="robots") + meta_content(p.metas, name="googlebot")).lower()
@@ -335,6 +347,14 @@ def audit(html: str, page_url: Optional[str], status: Optional[int] = None,
     words = len(re.findall(r"\w+", body_text))
     if words < 150:
         add("AVISO", "4", f"Só {words} palavras no HTML do servidor. Se a página mostra mais no navegador, o conteúdo depende de JavaScript e fica invisível para crawlers de IA.")
+    if page_url and page_url.startswith("https://"):
+        mixed = [i.get("src") for i in p.images if (i.get("src") or "").startswith("http://")]
+        mixed += re.findall(r"""<(?:script|iframe)[^>]+src=["'](http://[^"']+)""", html, re.I)
+        if mixed:
+            add("AVISO", "5", f"{len(mixed)} recurso(s) carregado(s) por http:// em página https (conteúdo misto; o navegador bloqueia).")
+    if re.search(r"history\.(pushState|replaceState)\s*\(", html) and re.search(r"popstate", html):
+        add("INFO", "11", "Script no HTML manipula o histórico (pushState/replaceState + popstate). É normal em SPA, "
+                          "mas confira se o botão Voltar leva à página anterior: sequestro do Voltar é spam no Google desde 15/06/2026.")
     head_values = " ".join([title, desc, *canon, *(m.get("content", "") for m in p.metas if m.get("property", "").startswith("og:"))])
     ph_page = find_placeholders(head_values)
     if ph_page:
@@ -359,6 +379,7 @@ def audit(html: str, page_url: Optional[str], status: Optional[int] = None,
         "links_internos": internal,
         "links_externos": external,
         "imagens": len(p.images),
+        "bytes_html": size_bytes,
         "achados": findings,
         "erros": sum(1 for f in findings if f["nivel"] == "ERRO"),
     }
@@ -408,7 +429,7 @@ def main() -> None:
         print(f"erro: não foi possível ler {args.alvo}: {err}", file=sys.stderr)
         sys.exit(2)
     page_url = f.final_url or args.base_url
-    result = audit(f.text(), page_url, f.status, f.headers, f.redirects)
+    result = audit(f.text(), page_url, f.status, f.headers, f.redirects, size_bytes=len(f.body))
     print(json.dumps(result, ensure_ascii=False, indent=2) if args.format == "json" else to_markdown(result))
     sys.exit(1 if result["erros"] else 0)
 

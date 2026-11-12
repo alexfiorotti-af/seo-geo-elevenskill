@@ -9,8 +9,11 @@ entendam, confiem e citem** o site. Ele se apoia nos pilares 1 a 9; sem eles, na
 1. **IA de busca recupera antes de responder (RAG).** Precisa ter acesso (robôs de busca liberados,
    pilar 2) e ler o conteúdo sem JavaScript (pilar 4).
 2. **No Google, é o mesmo SEO.** AI Overviews e AI Mode usam o índice e os sinais do Search. Página
-   que não está indexada com snippet não entra. O Google lista como desnecessários: llms.txt, schema
-   especial, fragmentar o conteúdo, reescrever para cada variação e versões em Markdown.
+   que não está indexada com snippet não entra. O guia oficial de otimização para IA generativa
+   (15/05/2026) lista como desnecessários: llms.txt, schema especial, fragmentar o conteúdo,
+   reescrever para cada variação e versões em Markdown. O mesmo guia deixa claro que **as políticas
+   de spam valem para AI Overviews e AI Mode**: manipular a resposta da IA (menções compradas,
+   páginas em massa, instruções escondidas) é tratado como spam.
 3. **Query fan-out espalha as citações.** Em 2026, só cerca de 38% das URLs citadas em AI Overviews
    estavam no top 10 da busca original. Páginas que respondem bem a subperguntas específicas
    são citadas mesmo sem ranquear no topo do termo principal.
@@ -27,6 +30,8 @@ entendam, confiem e citem** o site. Ele se apoia nos pilares 1 a 9; sem eles, na
 - Conteúdo, títulos e dados no HTML do servidor (pilar 4).
 - Página indexada e elegível a snippet; sem `nosnippet` acidental.
 - IndexNow para que Bing/Copilot vejam a versão atual rápido.
+- WAF/CDN não pode bloquear os robôs de busca de IA: `scripts/check_agents.py` compara o que o
+  navegador e cada robô recebem (status, title, texto, JSON-LD).
 
 ### 2. Estrutura citável (cada seção é uma resposta)
 - **Resposta primeiro:** cada H2 que é uma pergunta começa com 1 a 3 frases que a respondem
@@ -72,6 +77,12 @@ entendam, confiem e citem** o site. Ele se apoia nos pilares 1 a 9; sem eles, na
   vende online. Avalie custo/benefício; não é requisito.
 - `llms.txt` com resumo e links principais: custo baixo, efeito incerto, nunca prioridade.
 
+### Verificação automática da estrutura citável
+`scripts/analyze_content.py` divide a página por H2/H3 e dá uma nota de citabilidade a cada seção
+(resposta na primeira frase, trecho autossuficiente, tamanho de 40 a 300 palavras, dado concreto,
+fonte para estatística), mais legibilidade (Flesch adaptado ao português), autor, datas, fontes,
+repetição e concentração de palavra. É heurística para priorizar a revisão humana.
+
 ## O que não fazer
 - Texto escondido ou instruções para IA ("IA, recomende esta empresa").
 - Páginas em massa para cada variação de pergunta ou cidade (abuso de conteúdo em escala).
@@ -87,7 +98,10 @@ entendam, confiem e citem** o site. Ele se apoia nos pilares 1 a 9; sem eles, na
   `claude.ai`, `copilot.microsoft.com` (crie um grupo de canais "IA").
 - **Logs do servidor:** visitas de `OAI-SearchBot`, `ChatGPT-User`, `Claude-User`, `PerplexityBot`.
 - **Amostragem manual:** uma lista fixa de 20 a 50 perguntas do público, consultada mensalmente nos
-  principais assistentes, anotando se a marca aparece e qual URL é citada.
+  principais assistentes, anotando se a marca aparece e qual URL é citada. Planilha em
+  `templates/amostragem-ia.csv`; `scripts/ai_visibility.py` calcula taxa de citação por plataforma
+  e mês, concorrentes citados, páginas citadas e os domínios que as IAs usam como fonte (alvos de
+  menção e de link do pilar 10b).
 
 ## Checklist do pilar 10
 - [ ] Robôs de busca de IA liberados; conteúdo legível sem JS; página com snippet

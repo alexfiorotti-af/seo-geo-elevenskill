@@ -26,6 +26,18 @@ fonte primária (documentação oficial) a blogs.
 | IndexNow (protocolo) | https://www.indexnow.org/documentation |
 | Sitemaps (protocolo) | https://www.sitemaps.org/protocol.html |
 | robots.txt (RFC 9309) | https://www.rfc-editor.org/rfc/rfc9309 |
+| Como o Google interpreta o robots.txt (429 tratado como 5xx, limite de 500 KiB, até 5 redirects) | https://developers.google.com/crawling/docs/robots-txt/robots-txt-spec |
+| Por dentro do Googlebot: limite de 2 MB por URL, 64 MB para PDF, 15 MB para os demais crawlers (31/03/2026) | https://developers.google.com/search/blog/2026/03/crawler-blog-post |
+| Registro de mudanças da documentação de rastreio (Google-Agent em mar/2026, Web Bot Auth em mai/2026, Google-GeminiNotebook em jul/2026, Retry-After em out/2026) | https://developers.google.com/crawling/docs/changelog |
+| Atualizações da documentação do Search (fim dos resultados de FAQ em 07/05/2026) | https://developers.google.com/search/updates |
+| Política de spam "sequestro do botão Voltar" (13/04/2026, aplicada desde 15/06/2026) | https://developers.google.com/search/blog/2026/04/back-button-hijacking |
+| Mudança na política de abuso de reputação de site no EEE (ago/2026) | https://developers.google.com/search/blog/2026/08/update-site-reputation-policy |
+| Content Signals (rascunho IETF draft-romm-aipref-contentsignals, chaves search, ai-input, ai-train; expirado em abr/2026) | https://datatracker.ietf.org/doc/draft-romm-aipref-contentsignals/ |
+| Formato llms.txt | https://llmstxt.org/ |
+| PageSpeed Insights API v5 (CrUX + Lighthouse) | https://developers.google.com/speed/docs/insights/v5/get-started |
+| Limiares de Core Web Vitals e TTFB (bom até 0,8 s) | https://web.dev/articles/vitals e https://web.dev/articles/ttfb |
+| hreflang e versões localizadas | https://developers.google.com/search/docs/specialty/international/localized-versions |
+| Perfil da Empresa no Google: diretrizes de representação | https://support.google.com/business/answer/3038177 |
 | Schema.org | https://schema.org/ |
 | Universal Commerce Protocol (Google, jan/2026) | https://ucp.dev/ |
 | Política de link spam (dentro das políticas de spam: compra/venda, trocas excessivas, automação, publieditorial, diretórios, widgets, fóruns) | https://developers.google.com/search/docs/essentials/spam-policies#link-spam |
@@ -44,6 +56,7 @@ fonte primária (documentação oficial) a blogs.
 | Participação de buscadores no Brasil (out/2026): Google ~92%, Bing ~6,6% | StatCounter |
 | Bing Webmaster Tools lança relatório "AI Performance" com citações no Copilot (fev/2026) | Bing Webmaster Tools / cobertura especializada |
 | Visibilidade de marcas em AI Overviews (75 mil marcas, correlação de Spearman): menções da marca na web 0,664; âncoras com a marca 0,527; volume de busca da marca 0,392; número de backlinks 0,218 | Ahrefs, mai/2025 (atualizado em 2026) |
+| Índice de legibilidade de Flesch adaptado ao português: 248,835 − 1,015 × (palavras/frase) − 84,6 × (sílabas/palavra) | Martins, Ghiraldelo, Nunes e Oliveira Jr., 1996 (ICMC-USP) |
 | Google (John Mueller, jul/2021): troca sistemática de links é contra as diretrizes "mesmo que seja tematicamente relevante"; se for a maior parte dos links do site, pode gerar ação manual | Search Engine Roundtable, cobertura do Google Search Central Hangout |
 
 ## Linha do tempo de atualizações do Google em 2026 (confirmadas)
@@ -53,10 +66,12 @@ fonte primária (documentação oficial) a blogs.
 | Discover core update | 05/02 a 27/02 |
 | Spam update | 24/03 a 25/03 |
 | Core update de março | 27/03 a 08/04 |
-| Core update de maio | a partir de 21/05 (até ~2 semanas) |
+| Core update de maio | 21/05 a 02/06 |
 | Spam update | 24/06 a 26/06 |
 | Spam update | 18/08 a 21/08 |
 | Spam update | 24/09 a 08/10 |
 
-Atualize esta tabela consultando o painel de status do Google sempre que for diagnosticar
-variação de tráfego (pilar 11).
+Core update de maio concluído em 02/06/2026. A lista completa (2024 a 2026, com core, spam,
+políticas, recursos e rastreio, cada item com fonte oficial) está em `data/atualizacoes-google.json`
+e é usada por `scripts/google_updates.py`. Atualize o arquivo consultando o painel de status do
+Google sempre que for diagnosticar variação de tráfego (pilar 11).

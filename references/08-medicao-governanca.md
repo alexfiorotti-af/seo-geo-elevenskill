@@ -41,7 +41,15 @@ valem menos que um de um jornal da cidade. Detalhes em `10-autoridade-links-menc
 ## 3. Políticas de spam do Google (o que derruba um site)
 
 Atualizações de spam em 2026 (março, junho, agosto e setembro) reforçaram a aplicação destas
-políticas, sem criar novas:
+políticas. Desde 15/05/2026 o Google deixa explícito que elas valem também para AI Overviews e
+AI Mode. Mudanças de política em 2026:
+- **Sequestro do botão Voltar** (nova, anunciada em 13/04/2026, aplicada desde 15/06/2026): mexer no
+  histórico do navegador para que "Voltar" leve a outra página, anúncio ou interstitial. Vale
+  inclusive para scripts de terceiros (anúncios, widgets de recomendação): o dono do site responde.
+- **Abuso de reputação de site:** desde 28/08/2026 as ações manuais dessa política deixaram de valer
+  para buscas feitas no Espaço Econômico Europeu; no resto do mundo seguem valendo.
+
+Políticas que continuam derrubando sites:
 - **Abuso de conteúdo em escala:** muitas páginas geradas (por IA ou não) para manipular ranking,
   sem valor próprio. Inclui criar uma página para cada variação de busca do fan-out.
 - **Abuso de reputação de site:** conteúdo de terceiros hospedado para aproveitar a autoridade do domínio.
@@ -59,7 +67,8 @@ Links pagos ou patrocinados são permitidos com `rel="sponsored"` (e `rel="ugc"`
 |---|---|
 | A cada publicação | Title/description no lint; JSON-LD validado; links internos de entrada; sitemap atualizado; IndexNow enviado; pedido de indexação no GSC para páginas importantes |
 | Semanal | Erros novos no GSC (indexação, ações manuais, segurança) |
-| Mensal | Desempenho por cluster; páginas com impressões e CTR baixo (revisar title/description); amostragem de IA; `crawl_site.py` (links quebrados, órfãs); exportar Links do Search Console e rodar `verify_backlinks.py destinos` e `origens`; alertas de menção da marca |
+| A cada deploy | `drift.py comparar` contra a última foto das páginas-chave (noindex, canonical, title, JSON-LD, texto no HTML) |
+| Mensal | `gsc_opportunities.py` na exportação de Desempenho (quase lá, CTR abaixo do padrão do site, canibalização, perguntas); amostragem de IA + `ai_visibility.py`; `crawl_site.py` (links quebrados, órfãs, hreflang); exportar Links do Search Console e rodar `verify_backlinks.py destinos` e `origens`; alertas de menção da marca; relatório consolidado com `report.py --anterior` |
 | Trimestral | Revisão do mapa de palavras-chave, canibalização, poda e atualização de conteúdo; auditoria completa com os scripts; revisão do plano de autoridade (o que trouxe links e menções, o que não trouxe) |
 | Após atualização do Google | Esperar a conclusão do rollout + 1 semana antes de concluir algo; comparar períodos equivalentes |
 
@@ -67,12 +76,16 @@ Links pagos ou patrocinados são permitidos com `rel="sponsored"` (e `rel="ugc"`
 
 1. **É real ou é medição?** Mudou tag, consentimento de cookies, filtro, domínio da propriedade?
    Compare GA4 com GSC. Se só um caiu, é medição.
-2. **É técnico?** Verifique em ordem: robots.txt (mudou? 5xx?), `noindex` acidental (deploy recente),
+2. **É técnico?** Se houver foto anterior, rode primeiro `drift.py comparar`. Verifique em ordem:
+   robots.txt (mudou? 5xx/429?), `noindex` acidental (deploy recente),
    canonical apontando errado, redirects quebrados, sitemap vazio, servidor lento/5xx para robôs,
    conteúdo sumindo do HTML do servidor (mudança para CSR). Rode os scripts nas páginas que caíram.
 3. **Foi uma página, um cluster ou o site todo?** Página isolada → concorrência ou intenção mudou.
    Site todo → técnico, ação manual ou atualização do Google.
-4. **Coincide com atualização?** Compare as datas com o painel de status do Google (`00-fontes.md`).
+4. **Coincide com atualização?** Exporte a aba "Datas" do Desempenho no Search Console e rode
+   `scripts/google_updates.py cruzar datas.csv`: ele compara 14 dias antes e depois de cada
+   atualização registrada em `data/atualizacoes-google.json` e aponta as maiores quedas semanais.
+   Confira no painel de status se houve algo depois da última atualização do arquivo.
    - Core update: reavaliação de qualidade/relevância. Não há conserto técnico; melhore o
      conteúdo das páginas afetadas (originalidade, experiência, utilidade) e espere a próxima.
    - Spam update: revise as políticas acima com honestidade.

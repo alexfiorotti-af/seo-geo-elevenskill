@@ -72,10 +72,18 @@ bem feitos. Não exagere achando que mais schema = mais IA.
 - Use `@id` estáveis para montar um grafo: a Organization é declarada uma vez
   (`https://dominio/#organization`) e referenciada pelas demais páginas.
 - Valide no Rich Results Test e no validador do schema.org antes de publicar.
-- Tipos que o Google deixou de exibir (FAQ restrito a sites governamentais e de saúde desde 2023;
-  HowTo removido; e, em jun/2025, Book Actions, Course Info, ClaimReview, Estimated Salary,
-  Learning Video, Special Announcement e Vehicle Listing) podem permanecer sem prejuízo, mas não
-  gaste esforço novo neles esperando resultado enriquecido.
+- Tipos e recursos que o Google deixou de exibir podem permanecer sem prejuízo, mas não gaste
+  esforço novo neles esperando resultado enriquecido:
+  - **FAQ:** sem resultado enriquecido para nenhum site desde **07/05/2026** (antes, desde 2023, só
+    governo e saúde). O relatório saiu do Search Console e do Rich Results Test em jun/2026. A
+    marcação `FAQPage` não é proibida e continua ajudando a descrever a página.
+  - **HowTo:** removido em 2023.
+  - **Caixa de busca de sitelinks** (`SearchAction` no `WebSite`): não é exibida desde nov/2024.
+  - **Jun/2025:** Book Actions, Course Info, ClaimReview, Estimated Salary, Learning Video,
+    Special Announcement e Vehicle Listing.
+- Rode `scripts/lint_schema.py` antes de publicar: obrigatórios e recomendados por tipo, datas ISO
+  8601, preço/moeda, URLs absolutas, `@id` contraditório, avaliação "self-serving", tipos
+  aposentados e se `name`/`headline` aparecem no texto visível.
 
 ### Qual tipo usar em cada página
 | Página | Tipos |
@@ -86,7 +94,8 @@ bem feitos. Não exagere achando que mais schema = mais IA.
 | Produto | `Product` + `Offer` (preço, moeda, disponibilidade) + `AggregateRating`/`Review` só se reais |
 | Artigo/blog | `Article` ou `BlogPosting` com `author` (`Person` com página de autor), `datePublished`, `dateModified`, `image` |
 | Sobre/autor | `Person` ou `AboutPage`, com `sameAs` para perfis oficiais |
-| Perguntas frequentes | `FAQPage` só para conteúdo de perguntas reais; não esperar resultado enriquecido (ver acima) |
+| Perguntas frequentes | `FAQPage` só para conteúdo de perguntas reais; sem resultado enriquecido desde 07/05/2026 (ver acima) |
+| Vaga de emprego | `JobPosting` com `title`, `description`, `datePosted`, `validThrough`, `hiringOrganization`, `jobLocation` (ou `TELECOMMUTE`), `baseSalary` se público |
 | Evento | `Event` com data, local, status |
 | Vídeo | `VideoObject` com `thumbnailUrl`, `uploadDate`, `duration` |
 

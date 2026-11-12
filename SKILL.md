@@ -1,6 +1,6 @@
 ---
 name: seo-geo-elevenskill
-description: Planeja, implementa e audita SEO e GEO (otimização para buscadores e para motores de resposta com IA como AI Overviews, AI Mode, ChatGPT, Perplexity, Claude e Copilot) em sites, sempre do back-end para o front-end. Usar ao criar ou revisar um site, página, robots.txt, sitemap, dados estruturados, títulos, meta descriptions, metatags, mapa de palavras-chave, arquitetura de conteúdo, Core Web Vitals, visibilidade em IA, backlinks, link building, menções de marca, SEO local ou ao diagnosticar queda de tráfego orgânico. Also triggers on "SEO audit", "technical SEO", "GEO", "AEO", "AI search visibility", "schema markup", "meta tags", "backlinks", "link building", "site crawl".
+description: Planeja, implementa e audita SEO e GEO (otimização para buscadores e para motores de resposta com IA como AI Overviews, AI Mode, ChatGPT, Perplexity, Claude e Copilot) em sites, sempre do back-end para o front-end. Usar ao criar ou revisar um site, página, robots.txt, sitemap, llms.txt, dados estruturados, títulos, meta descriptions, metatags, mapa de palavras-chave, arquitetura de conteúdo, citabilidade, Core Web Vitals, visibilidade em IA, backlinks, link building, menções de marca, SEO local e NAP, hreflang e sites multilíngues, SEO de e-commerce, relatório de SEO para cliente, monitoramento após deploy ou ao diagnosticar queda de tráfego orgânico. Also triggers on "SEO audit", "technical SEO", "GEO", "AEO", "AI search visibility", "schema markup", "meta tags", "backlinks", "link building", "site crawl", "local SEO", "hreflang", "ecommerce SEO", "SEO report".
 license: MIT
 ---
 
@@ -33,6 +33,11 @@ Não existe atalho "só para IA" que compense um site tecnicamente fraco.
 | 10 | Front-end + fora do site | GEO e autoridade: conteúdo citável, entidade e autoria (10a); links e menções conquistados (10b) | `references/07-geo-motores-de-resposta.md` e `references/10-autoridade-links-mencoes.md` |
 | 11 | Transversal | Medição, governança e políticas de spam | `references/08-medicao-governanca.md` |
 
+Especialidades (leia quando o site for desse tipo):
+- Negócio local (endereço ou área de atendimento): `references/11-seo-local.md`.
+- Vários idiomas ou países: `references/12-internacional-hreflang.md`.
+- Loja virtual: `references/13-ecommerce.md`.
+
 Contexto de mercado e de como cada buscador funciona: `references/01-players-e-tecnologias.md`.
 Implementação por stack (Next.js, Astro, HTML estático, WordPress): `references/09-stacks.md`.
 Fontes com data de consulta: `references/00-fontes.md`.
@@ -60,16 +65,22 @@ diga qual assumiu na primeira linha da resposta.
 4. Rode os scripts de validação (seção "Ferramentas") sobre o que gerou.
 
 ### Modo B: auditoria de site existente
-1. Rode `scripts/check_robots.py` no domínio e `scripts/crawl_site.py` na home (links
-   quebrados, redirects internos, órfãs, inconsistências do sitemap, profundidade, titles repetidos).
-2. Rode `scripts/audit_page.py` nas páginas-chave (home, uma de serviço/produto, uma de conteúdo,
-   uma local se houver) e valide o sitemap com `scripts/validate_sitemap.py`.
-3. Se houver acesso ao Search Console, exporte Links e rode `scripts/verify_backlinks.py destinos`
-   (páginas com backlinks fora do ar) e `origens` (links perdidos, âncoras, atributos).
-4. Revise os pilares 1 → 11 contra a checklist de cada referência.
-5. Entregue com `templates/relatorio-auditoria.md`: achados ordenados por
-   **impacto × esforço**, cada um com evidência (URL, trecho, saída do script) e correção exata.
-   Bloqueios de indexação e rastreio vêm sempre antes de qualquer ajuste de front-end.
+1. Servidor e acesso: `scripts/check_server.py` (https, host, soft 404, compressão, cabeçalhos),
+   `scripts/check_robots.py` (o que cada robô pode acessar, Content-Signal, Crawl-delay) e
+   `scripts/check_agents.py` (WAF/CDN bloqueando ou servindo outro conteúdo a robôs de IA).
+2. Site inteiro: `scripts/crawl_site.py` na home (links quebrados, redirects internos, órfãs,
+   sitemap inconsistente, profundidade, titles repetidos, hreflang) e `scripts/validate_sitemap.py`.
+3. Páginas-chave (home, uma de serviço/produto, uma de conteúdo, uma local): `scripts/audit_page.py`,
+   `scripts/lint_schema.py` e, nas de conteúdo, `scripts/analyze_content.py` (citabilidade,
+   legibilidade, autor, datas). Negócio local: `scripts/check_local.py` (NAP). Dados de campo:
+   `scripts/pagespeed.py`.
+4. Com acesso ao Search Console: `scripts/gsc_opportunities.py` na exportação de Desempenho e
+   `scripts/verify_backlinks.py destinos`/`origens` na exportação de Links.
+5. Revise os pilares 1 → 11 contra a checklist de cada referência (e a especialidade, se houver).
+6. Entregue com `templates/relatorio-auditoria.md` ou gere o relatório consolidado (modo H):
+   achados ordenados por **impacto × esforço**, cada um com evidência (URL, trecho, saída do
+   script) e correção exata. Bloqueios de indexação e rastreio vêm sempre antes de qualquer
+   ajuste de front-end.
 
 ### Modo C: página ou conteúdo novo
 1. Defina a intenção e a palavra-chave principal (pilar 9). Confira se outra URL já atende
@@ -85,8 +96,9 @@ description pela metodologia do pilar 8 e rode `scripts/lint_meta.py` até zerar
 
 ### Modo E: diagnóstico de queda de tráfego
 Siga a árvore de decisão de `references/08-medicao-governanca.md` (seção "Queda de tráfego"):
-primeiro descarte problema técnico e de medição, depois cruze com as datas de atualizações do
-Google, só então trate conteúdo.
+primeiro descarte problema técnico e de medição (`drift.py comparar` se houver foto anterior),
+depois cruze com as atualizações do Google (`scripts/google_updates.py cruzar` com a aba "Datas"
+do Search Console), só então trate conteúdo.
 
 ### Modo F: plano de autoridade (links e menções)
 1. Leia `references/10-autoridade-links-mencoes.md`.
@@ -98,6 +110,29 @@ Google, só então trate conteúdo.
 5. Defina um ativo linkável (pilar 9) e use `templates/modelos-de-abordagem.md` e
    `templates/prospeccao-de-links.csv` (listas com contatos reais ficam fora do repositório).
 6. Medição mensal pelo pilar 11.
+
+### Modo G: monitoramento contínuo
+1. Depois de cada auditoria aprovada, tire a foto das páginas-chave:
+   `scripts/drift.py foto --sitemap ... --saida relatorios/<data>.json` (fora do Git).
+2. A cada deploy ou semanalmente: `drift.py comparar` (noindex, canonical, title, JSON-LD, texto
+   no HTML, redirects). ERRO = corrigir antes de qualquer outra tarefa.
+3. Mensal: `gsc_opportunities.py`, amostragem de IA com `templates/amostragem-ia.csv` +
+   `scripts/ai_visibility.py`, `crawl_site.py` e `google_updates.py listar --desde <último mês>`.
+
+### Modo H: relatório para cliente
+1. Rode os scripts do modo B com `--format json`, salvando em `relatorios/` (ignorada pelo Git).
+2. `scripts/report.py relatorios/*.json --site ... --saida relatorios/relatorio.html
+   --json-saida relatorios/<mês>.json` (com `--anterior` a partir do segundo mês, para mostrar
+   evolução, achados resolvidos e novos).
+3. A marca da agência vem de `metodologia-local/marca.json` (modelo em `templates/marca.exemplo.json`).
+4. Acrescente o resumo executivo em linguagem simples (3 problemas que mais custam e o ganho
+   esperado) e a lista do que depende do cliente. A nota por pilar é heurística: apresente como
+   indicador de evolução, nunca como métrica do Google.
+
+### Modo I: SEO local
+Leia `references/11-seo-local.md`. Perfis (Google, Apple, Bing) → NAP idêntico (`check_local.py`
+com a planilha `templates/citacoes-locais.csv`) → página por unidade com `LocalBusiness` →
+avaliações sem incentivo → autoridade local (pilar 10b) → medição com UTM no perfil.
 
 ## Briefing mínimo
 
@@ -143,8 +178,23 @@ Pergunte apenas o que não der para descobrir sozinho (no código, no site ou na
 | `scripts/crawl_site.py` | Rastreia o site pelos links internos (sem JS, respeitando o robots.txt): links quebrados, links para redirects, órfãs, sitemap inconsistente, profundidade, titles repetidos | `python3 scripts/crawl_site.py https://dominio.com --max-paginas 500` |
 | `scripts/verify_backlinks.py` | `origens`: confere se os backlinks ainda existem, com qual `rel` e âncora. `destinos`: confere se as páginas que recebem links respondem 200 | `python3 scripts/verify_backlinks.py destinos paginas-mais-linkadas.csv` |
 | `scripts/indexnow_submit.py` | Envia URLs novas/alteradas ao IndexNow (Bing, Yandex, Naver, Seznam, Yep). Chave via `INDEXNOW_KEY` | `INDEXNOW_KEY=... python3 scripts/indexnow_submit.py --host dominio.com urls.txt` |
+| `scripts/check_server.py` | Servidor: http→https, www, soft 404, tempo até o 1º byte, tamanho (2 MB), compressão, cache, X-Robots-Tag, robots/sitemap/llms.txt, cabeçalhos de segurança | `python3 scripts/check_server.py https://dominio.com` |
+| `scripts/check_agents.py` | Compara o que navegador e cada robô (Googlebot, Bingbot, OAI-SearchBot, ClaudeBot, PerplexityBot...) recebem: bloqueio de WAF, desafio, conteúdo diferente | `python3 scripts/check_agents.py https://dominio.com/` |
+| `scripts/lint_schema.py` | Valida JSON-LD: obrigatórios/recomendados por tipo, datas, preço, URLs, `@id`, avaliação própria, tipos aposentados (FAQ, HowTo, SearchAction), coerência com o texto visível | `python3 scripts/lint_schema.py https://dominio.com/servicos/x/` |
+| `scripts/analyze_content.py` | Citabilidade por seção (resposta direta, trecho autossuficiente, dado, fonte), legibilidade pt-BR, autor, datas, repetição, stuffing | `python3 scripts/analyze_content.py URL --palavra "termo"` |
+| `scripts/check_local.py` | NAP do site × referência × planilha de citações; horário, geo, `areaServed`, mapa, `tel:` | `python3 scripts/check_local.py URL1 URL2 --citacoes citacoes.csv` |
+| `scripts/llms_txt.py` | `validar` (formato, links, instruções para IA) e `gerar` (rascunho a partir do sitemap) | `python3 scripts/llms_txt.py gerar https://dominio.com > llms.txt` |
+| `scripts/drift.py` | `foto` e `comparar`: detecta noindex, canonical, title, JSON-LD e texto que mudaram entre duas datas | `python3 scripts/drift.py comparar relatorios/antes.json` |
+| `scripts/google_updates.py` | `listar` atualizações do Google (data/atualizacoes-google.json) e `cruzar` com a série diária do Search Console | `python3 scripts/google_updates.py cruzar datas.csv` |
+| `scripts/gsc_opportunities.py` | Exportação do Search Console: quase lá (4 a 20), CTR abaixo do padrão do site, canibalização, perguntas, marca × sem marca | `python3 scripts/gsc_opportunities.py Consultas.csv --marca aurora` |
+| `scripts/cluster_serp.py` | Agrupa palavras pela sobreposição de URLs no top 10 (mesma intenção = mesma página) e confere o mapa | `python3 scripts/cluster_serp.py serps.csv --mapa mapa.csv` |
+| `scripts/ai_visibility.py` | Resume a amostragem manual de IA: taxa de citação por plataforma/mês, concorrentes, domínios-fonte | `python3 scripts/ai_visibility.py amostragem.csv` |
+| `scripts/pagespeed.py` | Core Web Vitals de campo (CrUX) e laboratório pela API do PageSpeed. Chave opcional via `PAGESPEED_API_KEY` | `python3 scripts/pagespeed.py https://dominio.com/` |
+| `scripts/report.py` | Junta as saídas JSON num relatório HTML (imprimível em PDF) com nota por pilar e comparação com o mês anterior | `python3 scripts/report.py relatorios/*.json --saida relatorio.html` |
 
-Todos aceitam `--help`. Códigos de saída: `0` sem erros, `1` com erros, `2` falha de uso/rede.
+Todos aceitam `--help` e `--format json` (quando geram relatório). Códigos de saída: `0` sem erros,
+`1` com erros, `2` falha de uso/rede. Saídas com dados de clientes vão para `relatorios/` ou
+`clientes/` (ignoradas pelo Git).
 Quando não houver acesso à rede, rode sobre arquivos locais (os scripts aceitam caminho de arquivo).
 
 ## Formato da entrega

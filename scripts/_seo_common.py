@@ -8,6 +8,7 @@ import gzip
 import os
 import re
 import sys
+import time
 import unicodedata
 import urllib.error
 import urllib.parse
@@ -30,6 +31,8 @@ class Fetched:
     body: bytes = b""
     redirects: List[str] = field(default_factory=list)
     is_file: bool = False
+    elapsed: float = 0.0            # segundos até receber os cabeçalhos (aprox. TTFB + redirects)
+    raw_size: int = 0               # bytes recebidos no corpo (antes de descompactar)
 
     def text(self) -> str:
         data = self.body
@@ -77,19 +80,68 @@ def fetch(source: str, user_agent: str = DEFAULT_UA, method: str = "GET") -> Fet
         "Accept-Language": "pt-BR,pt;q=0.9,en;q=0.8",
         "Accept-Encoding": "gzip",
     })
+    start = time.monotonic()
+    try:
+        with opener.open(req, timeout=TIMEOUT) as resp:
+            elapsed = time.monotonic() - start
+            headers = {k.lower(): v for k, v in resp.headers.items()}
+            body = resp.read() if method != "HEAD" else b""
+            raw = len(body)
+            if headers.get("content-encoding", "").lower() == "gzip" and body:
+                body = gzip.decompress(body)
+            return Fetched(source, resp.geturl(), resp.status, headers, body, redirect.chain, False, elapsed, raw)
+    except urllib.error.HTTPError as err:
+        elapsed = time.monotonic() - start
+        headers = {k.lower(): v for k, v in (err.headers.items() if err.headers else [])}
+        body = err.read() or b""
+        raw = len(body)
+        if body[:2] == b"\x1f\x8b":
+            body = gzip.decompress(body)
+        return Fetched(source, err.geturl() or source, err.code, headers, body, redirect.chain, False, elapsed, raw)
+
+
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):  # noqa: N802
+        return None
+
+
+def fetch_once(url: str, user_agent: str = DEFAULT_UA, method: str = "GET") -> Fetched:
+    """Uma única requisição, SEM seguir redirect (para inspecionar 301/302 e o Location)."""
+    handlers: list = [_NoRedirect()]
+    if (urllib.parse.urlsplit(url).hostname or "") in LOCAL_HOSTS:
+        handlers.append(urllib.request.ProxyHandler({}))
+    opener = urllib.request.build_opener(*handlers)
+    req = urllib.request.Request(url, method=method, headers={"User-Agent": user_agent, "Accept-Encoding": "gzip"})
+    start = time.monotonic()
     try:
         with opener.open(req, timeout=TIMEOUT) as resp:
             headers = {k.lower(): v for k, v in resp.headers.items()}
             body = resp.read() if method != "HEAD" else b""
-            if headers.get("content-encoding", "").lower() == "gzip" and body:
-                body = gzip.decompress(body)
-            return Fetched(source, resp.geturl(), resp.status, headers, body, redirect.chain)
+            return Fetched(url, resp.geturl(), resp.status, headers, body, [], False, time.monotonic() - start, len(body))
     except urllib.error.HTTPError as err:
         headers = {k.lower(): v for k, v in (err.headers.items() if err.headers else [])}
         body = err.read() or b""
-        if body[:2] == b"\x1f\x8b":
-            body = gzip.decompress(body)
-        return Fetched(source, err.geturl() or source, err.code, headers, body, redirect.chain)
+        return Fetched(url, url, err.code, headers, body, [], False, time.monotonic() - start, len(body))
+
+
+GOOGLEBOT_HTML_LIMIT = 2 * 1024 * 1024   # 2 MB por URL (inclui cabeçalhos da resposta), exceto PDF
+GOOGLEBOT_PDF_LIMIT = 64 * 1024 * 1024   # 64 MB para PDF
+GOOGLE_DEFAULT_LIMIT = 15 * 1024 * 1024  # 15 MB para os demais crawlers do Google sem limite próprio
+
+
+def load_json(path: str):
+    import json  # local
+    with open(path, encoding="utf-8") as fh:
+        return json.load(fh)
+
+
+def html_to_text(html: str) -> str:
+    """Texto visível aproximado (sem script/style), para comparar páginas."""
+    html = re.sub(r"(?is)<(script|style|noscript|template|svg)\b.*?</\1>", " ", html)
+    html = re.sub(r"(?s)<!--.*?-->", " ", html)
+    text = re.sub(r"(?s)<[^>]+>", " ", html)
+    import html as _h  # local
+    return re.sub(r"\s+", " ", _h.unescape(text)).strip()
 
 
 def die(msg: str, code: int = 2) -> None:

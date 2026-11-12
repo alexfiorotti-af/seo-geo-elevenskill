@@ -4,6 +4,12 @@
 Implementa a correspondência do padrão: grupo mais específico por user-agent, regra de
 caminho mais longa vence, Allow vence empate, curingas * e $.
 
+Também mostra, por robô: Crawl-delay (o Google ignora; Bing e Yandex respeitam) e a linha
+Content-Signal (convenção da Cloudflare com as chaves search, ai-input e ai-train), lembrando
+que um robô com grupo próprio NÃO herda o que está no grupo '*'. Detecta o bloco gerenciado da
+Cloudflare, robots.txt acima de 500 KiB (o Google ignora o excedente) e trata 429 como 5xx,
+como o Google faz.
+
 Uso:
   python3 check_robots.py https://dominio.com
   python3 check_robots.py https://dominio.com --path / --path /blog/artigo/
@@ -11,7 +17,7 @@ Uso:
   python3 check_robots.py https://dominio.com --format json
 
 Saída: 0 se os robôs de busca podem rastrear todos os caminhos testados;
-       1 se algum robô de busca/IA de busca está bloqueado ou o robots.txt responde 5xx;
+       1 se algum robô de busca/IA de busca está bloqueado ou o robots.txt responde 5xx/429;
        2 falha de uso ou de rede.
 """
 from __future__ import annotations
@@ -22,7 +28,7 @@ import os
 import re
 import sys
 import urllib.parse
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _seo_common import fetch, is_url  # noqa: E402
@@ -38,17 +44,30 @@ BOTS: List[Tuple[str, str, str, str]] = [
     ("PerplexityBot", "Perplexity", "Índice do Perplexity", "busca"),
     ("Applebot", "Apple", "Siri, Spotlight", "busca"),
     ("DuckDuckBot", "DuckDuckGo", "DuckDuckGo", "busca"),
+    ("DuckAssistBot", "DuckDuckGo", "Respostas com IA do DuckDuckGo", "busca"),
     ("YandexBot", "Yandex", "Yandex", "busca"),
     ("ChatGPT-User", "OpenAI", "Acesso pedido pelo usuário", "sob-demanda"),
     ("Claude-User", "Anthropic", "Acesso pedido pelo usuário", "sob-demanda"),
     ("Perplexity-User", "Perplexity", "Acesso pedido pelo usuário (costuma ignorar robots.txt)", "sob-demanda"),
+    ("Google-Agent", "Google", "Agentes do Google agindo a pedido do usuário (desde mar/2026)", "sob-demanda"),
+    ("Google-GeminiNotebook", "Google", "Gemini Notebook, ex-NotebookLM (nome novo desde jul/2026)", "sob-demanda"),
+    ("Meta-ExternalFetcher", "Meta", "Acesso pedido pelo usuário", "sob-demanda"),
+    ("MistralAI-User", "Mistral", "Acesso pedido pelo usuário (Le Chat)", "sob-demanda"),
     ("GPTBot", "OpenAI", "Treino de modelos", "treino"),
     ("ClaudeBot", "Anthropic", "Treino de modelos", "treino"),
     ("Google-Extended", "Google", "Treino Gemini / grounding do app (não afeta Search)", "treino"),
     ("Applebot-Extended", "Apple", "Treino (não afeta busca da Apple)", "treino"),
     ("Meta-ExternalAgent", "Meta", "Treino e IA da Meta", "treino"),
+    ("Amazonbot", "Amazon", "Serviços e IA da Amazon (Alexa); pode treinar modelos", "treino"),
+    ("Bytespider", "ByteDance", "Treino de modelos", "treino"),
     ("CCBot", "Common Crawl", "Base aberta usada em treinos", "treino"),
 ]
+# Robôs acionados pelo usuário costumam não seguir o robots.txt (o Google documenta isso para os
+# fetchers "user-triggered"). O resultado deles abaixo é o que o arquivo PEDE, não o que acontece.
+USER_TRIGGERED_NOTE = ("Robôs 'sob-demanda' (ChatGPT-User, Claude-User, Perplexity-User, Google-Agent, "
+                       "Google-GeminiNotebook...) agem a pedido de uma pessoa e podem não seguir o robots.txt.")
+GOOGLE_MAX_BYTES = 500 * 1024
+SIGNAL_KEYS = ("search", "ai-input", "ai-train")
 CRITICAL = {"Googlebot", "Bingbot", "OAI-SearchBot", "Claude-SearchBot", "PerplexityBot"}
 
 
@@ -56,6 +75,17 @@ class Group:
     def __init__(self) -> None:
         self.agents: List[str] = []
         self.rules: List[Tuple[bool, str]] = []  # (allow?, padrão)
+        self.signals: Dict[str, str] = {}        # Content-Signal: search=yes, ai-train=no
+        self.crawl_delay: Optional[str] = None
+
+
+def parse_signals(value: str) -> Dict[str, str]:
+    out: Dict[str, str] = {}
+    for part in value.split(","):
+        if "=" in part:
+            k, v = part.split("=", 1)
+            out[k.strip().lower()] = v.strip().lower()
+    return out
 
 
 def parse_robots(text: str) -> Tuple[List[Group], List[str]]:
@@ -63,6 +93,7 @@ def parse_robots(text: str) -> Tuple[List[Group], List[str]]:
     sitemaps: List[str] = []
     current: Optional[Group] = None
     last_was_agent = False
+    global_signals: Dict[str, str] = {}
     for raw in text.splitlines():
         line = raw.split("#", 1)[0].strip()
         if not line or ":" not in line:
@@ -86,21 +117,45 @@ def parse_robots(text: str) -> Tuple[List[Group], List[str]]:
         elif key == "sitemap":
             sitemaps.append(value)
             last_was_agent = False
+        elif key == "content-signal":
+            last_was_agent = False
+            if current is None:
+                global_signals.update(parse_signals(value))
+            else:
+                current.signals.update(parse_signals(value))
+        elif key == "crawl-delay":
+            last_was_agent = False
+            if current is not None:
+                current.crawl_delay = value
         else:
             last_was_agent = False
+    if global_signals:  # Content-Signal fora de grupo: vale para o grupo '*'
+        star = [g for g in groups if "*" in g.agents]
+        for g in star or []:
+            for k, v in global_signals.items():
+                g.signals.setdefault(k, v)
+        if not star:
+            g = Group()
+            g.agents.append("*")
+            g.signals.update(global_signals)
+            groups.append(g)
     return groups, sitemaps
 
 
-def select_group(groups: List[Group], bot: str) -> Optional[List[Tuple[bool, str]]]:
-    """Junta os grupos cujo user-agent casa com o token do robô; senão, os grupos '*'."""
+def matching_groups(groups: List[Group], bot: str) -> List[Group]:
+    """Grupos que valem para o robô: os do token mais longo que casa; senão, os grupos '*'."""
     token = bot.lower()
     specific = [g for g in groups if any(a != "*" and token.startswith(a) for a in g.agents)]
     if specific:
         # o token mais longo que casa vence (ex.: 'googlebot-image' vs 'googlebot')
         best = max(len(a) for g in specific for a in g.agents if a != "*" and token.startswith(a))
-        chosen = [g for g in specific if any(a != "*" and token.startswith(a) and len(a) == best for a in g.agents)]
-    else:
-        chosen = [g for g in groups if "*" in g.agents]
+        return [g for g in specific if any(a != "*" and token.startswith(a) and len(a) == best for a in g.agents)]
+    return [g for g in groups if "*" in g.agents]
+
+
+def select_group(groups: List[Group], bot: str) -> Optional[List[Tuple[bool, str]]]:
+    """Junta as regras dos grupos que valem para o robô (None se nenhum grupo se aplica)."""
+    chosen = matching_groups(groups, bot)
     if not chosen:
         return None
     rules: List[Tuple[bool, str]] = []
@@ -157,23 +212,64 @@ def main() -> None:
     text = ""
     if f.status is None or f.status == 200:
         text = f.text()
+    elif f.status == 429:
+        notes.append("robots.txt respondeu 429 (excesso de requisições): o Google trata como erro de servidor "
+                     "e pode pausar o rastreio do site. Libere o robots.txt no limite de taxa/WAF.")
+        exit_code = 1
     elif 400 <= f.status < 500:
         notes.append(f"robots.txt respondeu {f.status}: os robôs tratam como 'tudo liberado'.")
     else:
         notes.append(f"robots.txt respondeu {f.status}: o Google pode pausar o rastreio do site inteiro. Corrija com urgência.")
         exit_code = 1
+    if len(f.body) > GOOGLE_MAX_BYTES:
+        notes.append(f"robots.txt com {len(f.body) // 1024} KiB: o Google ignora o que passa de 500 KiB. Simplifique as regras.")
+    if len(f.redirects) > 5:
+        notes.append(f"robots.txt passa por {len(f.redirects)} redirects; o Google segue no máximo 5.")
+    if "cloudflare managed" in text.lower():
+        notes.append("Bloco gerenciado da Cloudflare detectado no robots.txt (Content-Signal e bloqueio de robôs de IA). "
+                     "Confira se ele bate com a política de IA do site; ele é editado no painel da Cloudflare, não no servidor.")
 
     groups, sitemaps = parse_robots(text)
     rows = []
     for token, company, role, category in BOTS:
         rules = select_group(groups, token)
+        chosen = matching_groups(groups, token)
+        signals: Dict[str, str] = {}
+        delay: Optional[str] = None
+        for g in chosen:
+            signals.update(g.signals)
+            delay = delay or g.crawl_delay
         results = {}
         for path in paths:
             ok, rule = is_allowed(rules, path)
             results[path] = {"permitido": ok, "regra": rule}
             if not ok and token in CRITICAL:
                 exit_code = 1
-        rows.append({"robo": token, "empresa": company, "funcao": role, "categoria": category, "caminhos": results})
+        named = any(a != "*" for g in chosen for a in g.agents)
+        rows.append({"robo": token, "empresa": company, "funcao": role, "categoria": category, "caminhos": results,
+                     "grupo": "próprio" if named else ("*" if chosen else "nenhum"),
+                     "content_signal": signals, "crawl_delay": delay})
+
+    star_signals = any(g.signals for g in groups if "*" in g.agents)
+    if star_signals:
+        orphan = [r["robo"] for r in rows if r["grupo"] == "próprio" and not r["content_signal"]]
+        if orphan:
+            notes.append("Content-Signal está no grupo '*', mas estes robôs têm grupo próprio e não herdam o sinal: "
+                         + ", ".join(orphan) + ". Repita a linha Content-Signal nesses grupos se quiser que valha para eles.")
+        notes.append("Content-Signal é uma convenção (proposta da Cloudflare; o rascunho no IETF expirou em abr/2026): "
+                     "expressa preferência, não bloqueia. Quem decide o acesso continua sendo Allow/Disallow.")
+    for r in rows:
+        bad = {k: v for k, v in r["content_signal"].items() if k not in SIGNAL_KEYS or v not in ("yes", "no")}
+        if bad:
+            notes.append(f"Content-Signal com chave/valor fora do padrão para {r['robo']}: {bad} (use search, ai-input, ai-train = yes/no).")
+            break
+    for r in rows:
+        if r["robo"] in CRITICAL and r["content_signal"].get("search") == "no":
+            notes.append(f"{r['robo']} recebe Content-Signal search=no: contradiz o objetivo de aparecer na busca.")
+    delays = sorted({r["crawl_delay"] for r in rows if r["crawl_delay"]})
+    if delays:
+        notes.append(f"Crawl-delay declarado ({', '.join(delays)} s): o Google ignora; Bing e Yandex respeitam. "
+                     "Valores altos atrasam a descoberta de páginas novas no Bing/Copilot.")
 
     if not sitemaps and text:
         notes.append("Nenhuma linha 'Sitemap:' no robots.txt; declare a URL absoluta do sitemap.")
@@ -187,7 +283,8 @@ def main() -> None:
     if training_blocked:
         notes.append("Robôs de treino bloqueados (decisão do dono, não afeta busca): " + ", ".join(training_blocked) + ".")
 
-    result = {"robots_txt": source, "status": f.status, "sitemaps": sitemaps, "robos": rows, "observacoes": notes}
+    result = {"robots_txt": source, "status": f.status, "tamanho_bytes": len(f.body), "sitemaps": sitemaps,
+              "robos": rows, "observacoes": notes}
     if args.format == "json":
         print(json.dumps(result, ensure_ascii=False, indent=2))
     else:
@@ -202,11 +299,19 @@ def main() -> None:
                 v = r["caminhos"][p]
                 cells.append(("permitido" if v["permitido"] else "**bloqueado**") + (f" ({v['regra']})" if v["regra"] else ""))
             print(f"| {r['robo']} | {r['empresa']} | {r['funcao']} | {r['categoria']} | " + " | ".join(cells) + " |")
+        extras = [r for r in rows if r["content_signal"] or r["crawl_delay"]]
+        if extras:
+            print("\n## Sinais por robô\n")
+            print("| Robô | Grupo aplicado | Content-Signal | Crawl-delay |")
+            print("|---|---|---|---|")
+            for r in extras:
+                sig = ", ".join(f"{k}={v}" for k, v in r["content_signal"].items()) or "(nenhum)"
+                print(f"| {r['robo']} | {r['grupo']} | {sig} | {r['crawl_delay'] or '-'} |")
         if notes:
             print("\n## Observações\n")
             for n in notes:
                 print(f"- {n}")
-        print("\n_Perplexity-User e ChatGPT-User podem não seguir robots.txt por serem acessos pedidos pelo usuário._")
+        print(f"\n_{USER_TRIGGERED_NOTE}_")
     sys.exit(exit_code)
 
 

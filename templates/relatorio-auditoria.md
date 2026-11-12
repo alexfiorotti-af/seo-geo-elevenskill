@@ -2,6 +2,10 @@
 
 **Data:** AAAA-MM-DD · **Escopo:** [páginas auditadas] · **Ferramentas:** scripts da skill, Search Console, Bing WMT, PageSpeed Insights
 
+> Atalho: rode os scripts com `--format json` e gere a versão HTML (imprimível em PDF, com nota
+> por pilar e comparação com o mês anterior) com `scripts/report.py`. Use este modelo para o
+> resumo executivo e as recomendações escritas.
+
 ## Resumo executivo
 3 a 5 linhas: estado geral, os 3 problemas que mais custam tráfego/conversão hoje e o ganho esperado
 ao corrigi-los. Sem jargão.
